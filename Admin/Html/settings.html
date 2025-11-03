@@ -1,0 +1,49 @@
+<div class="ai-settings-container">
+    <h2>🤖 AI Product Optimizer - Einstellungen</h2>
+    
+    <div class="ai-form-group">
+        <label for="api_key">OpenAI API Key:</label>
+        <input type="password" 
+               id="api_key" 
+               name="api_key" 
+               value="{$API_KEY}" 
+               placeholder="sk-...">
+        <small>Ihren API Key erhalten Sie auf <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></small>
+    </div>
+    
+    <button type="button" 
+            class="ai-optimizer-button" 
+            onclick="saveApiKey()">
+        💾 Speichern
+    </button>
+</div>
+
+<script>
+function saveApiKey() {
+    const apiKey = document.getElementById('api_key').value;
+    
+    if (!apiKey) {
+        alert('Bitte API Key eingeben!');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('api_key', apiKey);
+    
+    fetch('admin.php?do=AIProductOptimizer/SaveKey', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ API Key gespeichert!');
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler beim Speichern: ' + error.message);
+    });
+}
+</script>

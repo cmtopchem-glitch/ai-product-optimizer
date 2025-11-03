@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .ai-config-container { max-width: 800px; margin: 20px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .help-block { font-size: 12px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<!-- DEBUG: apiKey={$apiKey} model={$model} success={$success} error={$error} -->
+<div class="ai-config-container">
+    <h1>🤖 AI Product Optimizer - Konfiguration</h1>
+    
+    {if $success}
+    <div class="alert alert-success">✓ Konfiguration erfolgreich gespeichert!</div>
+    {/if}
+    
+    {if $error}
+    <div class="alert alert-danger">✗ Bitte API Key eingeben!</div>
+    {/if}
+    
+    <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
+        <div class="form-group">
+            <label>OpenAI API Key *</label>
+            <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+            <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+        </div>
+        
+        <div class="form-group">
+            <label>Modell</label>
+            <select class="form-control" name="model">
+                <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
+                <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Speichern</button>
+        <a href="admin.php?do=Modules/ModuleCenter" class="btn">← Zurück</a>
+    </form>
+    
+    <hr>
+    
+    <h3>📝 Verwendung</h3>
+    <ol>
+        <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
+        <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
+    </ol>
+</div>
+</body>
+</html>

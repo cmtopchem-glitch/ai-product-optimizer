@@ -1,0 +1,137 @@
+<?php
+class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCenterModuleController
+{
+    protected function _init()
+    {
+    }
+    
+    public function actionDefault()
+    {
+        $this->pageTitle = 'AI Product Optimizer - Konfiguration';
+        
+        // Lade gespeicherte Werte
+        $apiKey = '';
+        $model = 'gpt-4o-mini';
+        
+        $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_MODEL')";
+        $result = xtc_db_query($query);
+        while ($row = xtc_db_fetch_array($result)) {
+            if ($row['gm_key'] == 'OPENAI_API_KEY') {
+                $apiKey = $row['gm_value'];
+            }
+            if ($row['gm_key'] == 'OPENAI_MODEL') {
+                $model = $row['gm_value'];
+            }
+        }
+        
+        $success = $this->_getQueryParameter('success') == '1';
+        $error = $this->_getQueryParameter('error') == '1';
+        
+        // Template laden und Variablen zuweisen
+        $coo_text_mgr = MainFactory::create_object('LanguageTextManager', array('ai_product_optimizer', $_SESSION['languages_id']));
+        $smarty = new Smarty();
+        $smarty->template_dir = DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Admin/Templates/';
+        $smarty->compile_dir = DIR_FS_CATALOG . 'cache/smarty/';
+        
+        $smarty->assign('pageTitle', $this->pageTitle);
+        $smarty->assign('apiKey', $apiKey);
+        $smarty->assign('model', $model);
+        $smarty->assign('success', $success);
+        $smarty->assign('error', $error);
+        
+        $html = $smarty->fetch('config_page.html');
+        
+        echo $html;
+        exit;
+    }
+    
+    public function actionSave()
+    {
+        $apiKey = $this->_getPostData('openai_key');
+        $model = $this->_getPostData('model');
+        
+        if (empty($apiKey)) {
+            header('Location: admin.php?do=AIProductOptimizerModuleCenterModule&error=1');
+            exit;
+        }
+        
+        $this->_saveConfig('OPENAI_API_KEY', $apiKey);
+        $this->_saveConfig('OPENAI_MODEL', $model);
+        
+        header('Location: admin.php?do=AIProductOptimizerModuleCenterModule&success=1');
+        exit;
+    }
+    
+    private function _saveConfig($key, $value)
+    {
+        $query = "SELECT gm_configuration_id FROM gm_configuration WHERE gm_key = '" . xtc_db_input($key) . "'";
+        $result = xtc_db_query($query);
+        
+        if (xtc_db_num_rows($result) > 0) {
+            $query = "UPDATE gm_configuration SET gm_value = '" . xtc_db_input($value) . "' WHERE gm_key = '" . xtc_db_input($key) . "'";
+        } else {
+            $query = "INSERT INTO gm_configuration (gm_key, gm_value) VALUES ('" . xtc_db_input($key) . "', '" . xtc_db_input($value) . "')";
+        }
+        
+        xtc_db_query($query);
+    }
+    
+    public function actionGenerate()
+    {
+        try {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/OpenAIService.inc.php';
+            
+            $productId = $this->_getPostData('product_id');
+            $productName = $this->_getPostData('product_name');
+            $originalText = $this->_getPostData('original_text');
+            $category = $this->_getPostData('category');
+            $brand = $this->_getPostData('brand');
+            
+            if (empty($productName) || empty($originalText)) {
+                throw new Exception('Produktname und Text sind erforderlich');
+            }
+            
+            $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_API_KEY' LIMIT 1";
+            $result = xtc_db_query($query);
+            $apiKey = '';
+            if ($row = xtc_db_fetch_array($result)) {
+                $apiKey = $row['gm_value'];
+            }
+            
+            if (empty($apiKey)) {
+                throw new Exception('OpenAI API Key nicht konfiguriert');
+            }
+            
+            $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_MODEL' LIMIT 1";
+            $result = xtc_db_query($query);
+            $model = 'gpt-4o-mini';
+            if ($row = xtc_db_fetch_array($result)) {
+                $model = $row['gm_value'];
+            }
+            
+            $service = new OpenAIService($apiKey, $model);
+            $languages = array('de', 'en', 'fr', 'es');
+            $results = array();
+            
+            foreach ($languages as $lang) {
+                $results[$lang] = $service->generateSEOContent(
+                    $productName,
+                    $originalText,
+                    $lang,
+                    array('category' => $category, 'brand' => $brand)
+                );
+            }
+            
+            $this->_jsonResponse(array('success' => true, 'data' => $results));
+        } catch (Exception $e) {
+            $this->_jsonResponse(array('success' => false, 'error' => $e->getMessage()));
+        }
+    }
+    
+    private function _jsonResponse($data)
+    {
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
+    }
+}

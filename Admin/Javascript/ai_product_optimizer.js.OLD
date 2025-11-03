@@ -1,0 +1,167 @@
+/**
+ * JavaScript für AI Product Optimizer - Gambio GX 4
+ */
+
+var AIProductOptimizer = {
+    
+    init: function() {
+        if ($('#ai-optimize-button').length > 0) {
+            return;
+        }
+        this.bindEvents();
+    },
+    
+    bindEvents: function() {
+        var self = this;
+        $(document).on('click', '#ai-optimize-button', function(e) {
+            e.preventDefault();
+            self.generateContent();
+        });
+    },
+    
+    generateContent: function() {
+        var self = this;
+        
+        // Warte kurz bis CKEditor sicher geladen ist
+        setTimeout(function() {
+            var productName = self.getProductName();
+            var originalText = self.getOriginalDescription();
+            var productId = self.getProductId();
+            
+            console.log('Debug - Produktname:', productName);
+            console.log('Debug - Beschreibung Länge:', originalText ? originalText.length : 0);
+            console.log('Debug - Beschreibung Anfang:', originalText ? originalText.substring(0, 100) : 'leer');
+            
+            if (!productName || !originalText || originalText.length < 10) {
+                self.showError('Bitte füllen Sie zunächst Produktname und Beschreibung (Deutsch) aus.');
+                return;
+            }
+            
+            self.showStatus('Generiere optimierte Texte...', 'info');
+            $('#ai-optimize-button').prop('disabled', true);
+            
+            $.ajax({
+                url: 'admin.php?do=AIProductOptimizerModuleCenterModule/Generate',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    product_id: productId,
+                    product_name: productName,
+                    original_text: originalText,
+                    category: self.getCategoryName(),
+                    brand: self.getBrandName()
+                },
+                success: function(response) {
+                    console.log('API Response:', response);
+                    if (response.success) {
+                        self.fillFields(response.data);
+                        self.showStatus('Texte erfolgreich generiert!', 'success');
+                    } else {
+                        self.showError(response.error || 'Ein Fehler ist aufgetreten');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', xhr.responseText);
+                    self.showError('Verbindungsfehler: ' + error);
+                },
+                complete: function() {
+                    $('#ai-optimize-button').prop('disabled', false);
+                }
+            });
+        }, 100);
+    },
+    
+    fillFields: function(data) {
+        var languageMap = {
+            'de': 1,
+            'en': 2,
+            'fr': 3,
+            'es': 5
+        };
+        
+        $.each(data, function(lang, content) {
+            var langId = languageMap[lang];
+            var descFieldName = 'products_description_' + langId;
+            
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[descFieldName]) {
+                CKEDITOR.instances[descFieldName].setData(content.description);
+            } else {
+                $('textarea[name="' + descFieldName + '"]').val(content.description);
+            }
+            
+            $('input[name="products_meta_title[' + langId + ']"]').val(content.meta_title);
+            $('textarea[name="products_meta_description[' + langId + ']"]').val(content.meta_description);
+        });
+        
+        alert('✅ Texte erfolgreich generiert!\n\nDie SEO-optimierten Texte wurden in alle 4 Sprachen eingefügt:\n- Produktbeschreibung\n- Meta-Titel\n- Meta-Description\n\nBitte überprüfen und speichern!');
+    },
+    
+    getProductId: function() {
+        return $('input[name="products_id"]').val() || '';
+    },
+    
+    getProductName: function() {
+        return $('input[name="products_name[1]"]').val() || '';
+    },
+    
+    getOriginalDescription: function() {
+        var descFieldName = 'products_description_1';
+        
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[descFieldName]) {
+            var data = CKEDITOR.instances[descFieldName].getData();
+            var temp = $('<div>').html(data).text();
+            return temp.trim();
+        }
+        
+        return $('textarea[name="' + descFieldName + '"]').val() || '';
+    },
+    
+    getCategoryName: function() {
+        return $('select[name="categories_id"] option:selected').text() || '';
+    },
+    
+    getBrandName: function() {
+        return $('input[name="brand_name"]').val() || '';
+    },
+    
+    showStatus: function(message, type) {
+        var iconMap = {
+            'info': 'fa-spinner fa-spin',
+            'success': 'fa-check',
+            'error': 'fa-exclamation-triangle'
+        };
+        
+        var colorMap = {
+            'info': '#0066cc',
+            'success': '#28a745',
+            'error': '#dc3545'
+        };
+        
+        $('#ai-optimizer-status').html(
+            '<i class="fa ' + iconMap[type] + '"></i> ' +
+            '<span style="color: ' + colorMap[type] + '">' + message + '</span>'
+        );
+        
+        if (type === 'success' || type === 'error') {
+            setTimeout(function() {
+                $('#ai-optimizer-status').fadeOut(function() {
+                    $(this).html('').show();
+                });
+            }, 5000);
+        }
+    },
+    
+    showError: function(message) {
+        this.showStatus(message, 'error');
+        alert('❌ Fehler: ' + message);
+    }
+};
+
+(function() {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(function() { AIProductOptimizer.init(); }, 100);
+    }
+    $(document).ready(function() {
+        AIProductOptimizer.init();
+    });
+})();

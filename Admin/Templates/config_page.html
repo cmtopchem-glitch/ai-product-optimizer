@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .ai-config-container { max-width: 900px; margin: 20px; }
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; }
+        textarea.form-control { min-height: 150px; resize: vertical; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .help-block { font-size: 12px; color: #666; margin-top: 5px; }
+        .section-title { margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; }
+        .placeholder-info { background: #f8f9fa; padding: 10px; margin-top: 10px; border-left: 3px solid #007bff; }
+        .placeholder-info code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+<div class="ai-config-container">
+    <h1>🤖 AI Product Optimizer - Konfiguration</h1>
+    
+    {if $success}
+    <div class="alert alert-success">✓ Konfiguration erfolgreich gespeichert!</div>
+    {/if}
+    {if $error}
+    <div class="alert alert-danger">✗ Bitte API Key eingeben!</div>
+    {/if}
+    
+    <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
+        
+        <h2>🔑 API-Einstellungen</h2>
+        
+        <div class="form-group">
+            <label>OpenAI API Key *</label>
+            <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+            <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+        </div>
+        
+        <div class="form-group">
+            <label>Modell</label>
+            <select class="form-control" name="model" id="model-select">
+                {if $availableModels && count($availableModels) > 0}
+                    {foreach from=$availableModels item=modelOption}
+                        <option value="{$modelOption.id}" {if $model == $modelOption.id}selected{/if}>{$modelOption.name}</option>
+                    {/foreach}
+                {else}
+                    <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
+                    <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
+                {/if}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" onclick="updateModels()">
+                🔄 Modelle von OpenAI aktualisieren
+            </button>
+            <p class="help-block" id="update-status"></p>
+        </div>
+        
+        <h2 class="section-title">📝 Prompt-Konfiguration</h2>
+        
+        <div class="form-group">
+            <label>System-Prompt</label>
+            <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
+            <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI</p>
+            <button type="button" class="btn btn-info btn-sm" onclick="resetSystemPrompt()">Standard wiederherstellen</button>
+        </div>
+        
+        <div class="form-group">
+            <label>User-Prompt (Aufgabenstellung)</label>
+            <textarea class="form-control" name="user_prompt" rows="20">{$userPrompt|escape}</textarea>
+            <p class="help-block">Template für die Aufgabenstellung. Verwenden Sie Platzhalter für dynamische Inhalte:</p>
+            <div class="placeholder-info">
+                <strong>Verfügbare Platzhalter:</strong><br>
+                <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                <code>{literal}{ldelim}ORIGINAL_TEXT{rdelim}{/literal}</code> - Original Produktbeschreibung<br>
+                <code>{literal}{ldelim}LANGUAGE{rdelim}{/literal}</code> - Zielsprache<br>
+                <code>{literal}{ldelim}BRAND_LINE{rdelim}{/literal}</code> - Marke (falls vorhanden)<br>
+                <code>{literal}{ldelim}CATEGORY_LINE{rdelim}{/literal}</code> - Kategorie (falls vorhanden)
+            </div>
+            <button type="button" class="btn btn-info btn-sm" onclick="resetUserPrompt()">Standard wiederherstellen</button>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Speichern</button>
+        <a href="admin.php?do=ModuleCenter" class="btn">← Zurück</a>
+    </form>
+    
+    <hr style="margin-top: 40px;">
+    <h3>📝 Verwendung</h3>
+    <ol>
+        <li>Konfigurieren Sie Ihren OpenAI API Key und wählen Sie ein Modell</li>
+        <li>Passen Sie optional die Prompts an Ihre Bedürfnisse an</li>
+        <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
+        <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
+        <li>Warten Sie ~40 Sekunden während die Texte generiert werden</li>
+    </ol>
+</div>
+
+<script>
+var defaultSystemPrompt = 'Du bist ein professioneller E-Commerce SEO-Texter. Du antwortest immer im angeforderten JSON-Format.';
+
+var defaultUserPrompt = `Du bist ein Experte für E-Commerce SEO und Produkttexte.
+
+Produkt: {ldelim}PRODUCT_NAME{rdelim}
+{ldelim}BRAND_LINE{rdelim}{ldelim}CATEGORY_LINE{rdelim}
+Original-Produkttext:
+{ldelim}ORIGINAL_TEXT{rdelim}
+
+AUFGABE:
+Erstelle einen SEO-optimierten Produkttext in {ldelim}LANGUAGE{rdelim}. Beachte folgende Anforderungen:
+
+1. Schreibe einen verkaufsstarken, informativen Produkttext (300-500 Wörter)
+2. Integriere relevante Keywords natürlich
+3. Strukturiere den Text mit Absätzen für bessere Lesbarkeit
+4. Hebe Vorteile und Nutzen hervor
+5. Erstelle einen prägnanten Meta-Titel (max. 60 Zeichen)
+6. Erstelle eine überzeugende Meta-Description (max. 160 Zeichen)
+
+FORMAT DER ANTWORT (JSON):
+{
+  "product_description": "Der optimierte Produkttext hier...",
+  "meta_title": "SEO Meta-Titel",
+  "meta_description": "SEO Meta-Description"
+}
+
+Antworte NUR mit dem JSON-Objekt, ohne zusätzlichen Text.`;
+
+function resetSystemPrompt() {
+    if (confirm('System-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="system_prompt"]').value = defaultSystemPrompt;
+    }
+}
+
+function resetUserPrompt() {
+    if (confirm('User-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="user_prompt"]').value = defaultUserPrompt;
+    }
+}
+
+function updateModels() {
+    var statusEl = document.getElementById('update-status');
+    statusEl.innerHTML = '⏳ Lade Modelle von OpenAI...';
+    statusEl.style.color = '#666';
+    
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/UpdateModels', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.innerHTML = '✓ ' + data.count + ' Modelle aktualisiert. Seite wird neu geladen...';
+            statusEl.style.color = '#28a745';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.style.color = '#dc3545';
+        }
+    })
+    .catch(error => {
+        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.style.color = '#dc3545';
+    });
+}
+</script>
+</body>
+</html>

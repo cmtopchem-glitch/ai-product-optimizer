@@ -1,0 +1,168 @@
+(function() {
+    'use strict';
+    
+    console.log('AIProductOptimizer wird initialisiert...');
+    
+    let isProcessing = false;
+
+    function waitForForm() {
+        return new Promise((resolve) => {
+            const form = document.querySelector('form[name="products"]');
+            if (form) {
+                console.log('✅ Formular gefunden!');
+                resolve(form);
+                return;
+            }
+
+            console.log('⏳ Warte auf Formular...');
+            const observer = new MutationObserver(() => {
+                const form = document.querySelector('form[name="products"]');
+                if (form) {
+                    console.log('✅ Formular gefunden (nach Warten)!');
+                    observer.disconnect();
+                    resolve(form);
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            setTimeout(() => {
+                observer.disconnect();
+                console.error('❌ Formular nicht gefunden nach 5 Sekunden!');
+                resolve(null);
+            }, 5000);
+        });
+    }
+
+    async function addGenerateButton() {
+        const productForm = await waitForForm();
+        
+        if (!productForm) {
+            console.error('Produktformular nicht gefunden');
+            return;
+        }
+
+        console.log('🔧 Füge Button hinzu...');
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-primary';
+        button.textContent = 'KI-Texte generieren';
+        button.style.cssText = 'margin: 10px 0; padding: 10px 20px;';
+        
+        button.addEventListener('click', handleButtonClick);
+        
+        const firstFieldset = productForm.querySelector('fieldset');
+        if (firstFieldset) {
+            firstFieldset.insertBefore(button, firstFieldset.firstChild);
+            console.log('✅ Button erfolgreich hinzugefügt!');
+        } else {
+            console.error('❌ Kein fieldset gefunden!');
+        }
+    }
+
+    function handleButtonClick() {
+        console.log('🖱️ Button geklickt!');
+        
+        if (isProcessing) {
+            console.log('⚠️ Bereits in Verarbeitung...');
+            return;
+        }
+        isProcessing = true;
+
+        const productName = document.querySelector('input[name="products_name[2]"]')?.value || '';
+        const descTextarea = document.querySelector('textarea[name="products_description[2]"]');
+        const currentDesc = descTextarea?.value || '';
+
+        console.log('📋 Produktname:', productName);
+        console.log('📋 Beschreibung Länge:', currentDesc.length);
+
+        if (!productName.trim()) {
+            alert('Bitte geben Sie einen Produktnamen ein');
+            isProcessing = false;
+            return;
+        }
+
+        const button = document.querySelector('.btn-primary');
+        const originalText = button.textContent;
+        button.textContent = 'Generiere Texte...';
+        button.disabled = true;
+
+        console.log('🌐 Sende API-Request...');
+
+        fetch('https://eufab.mooo.com/api/ai/generate-texts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productName: productName,
+                currentDescription: currentDesc
+            })
+        })
+        .then(response => {
+            console.log('🔍 Response Status:', response.status);
+            console.log('🔍 Response OK:', response.ok);
+            return response.json();
+        })
+        .then(data => {
+            console.log('🔍 API Response:', data);
+            console.log('🔍 data.success:', data?.success);
+            console.log('🔍 data.data:', data?.data);
+            
+            if (data && data.success && data.data) {
+                console.log('✅ Setze Felder...');
+                
+                if (data.data.metaTitle) {
+                    const field = document.querySelector('input[name="products_meta_title[2]"]');
+                    if (field) {
+                        field.value = data.data.metaTitle;
+                        console.log('✓ Meta Title gesetzt');
+                    }
+                }
+
+                if (data.data.metaDescription) {
+                    const field = document.querySelector('textarea[name="products_meta_description[2]"]');
+                    if (field) {
+                        field.value = data.data.metaDescription;
+                        console.log('✓ Meta Description gesetzt');
+                    }
+                }
+
+                if (data.data.metaKeywords) {
+                    const field = document.querySelector('textarea[name="products_meta_keywords[2]"]');
+                    if (field) {
+                        field.value = data.data.metaKeywords;
+                        console.log('✓ Meta Keywords gesetzt');
+                    }
+                }
+
+                console.log('⏰ Reload in 2 Sekunden...');
+                setTimeout(() => {
+                    console.log('🔄 RELOAD!');
+                    window.location.reload();
+                }, 2000);
+            } else {
+                console.error('❌ Ungültige API-Antwort:', data);
+                alert('Fehler: ' + (data?.message || 'Ungültige Antwort'));
+            }
+        })
+        .catch(error => {
+            console.error('❌ Fetch-Fehler:', error);
+            alert('Netzwerkfehler: ' + error.message);
+        })
+        .finally(() => {
+            button.textContent = originalText;
+            button.disabled = false;
+            isProcessing = false;
+            console.log('🏁 Fertig');
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addGenerateButton);
+    } else {
+        addGenerateButton();
+    }
+})();

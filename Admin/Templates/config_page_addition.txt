@@ -1,0 +1,26 @@
+
+        <div class="form-group">
+            <label>Verfügbare Modelle</label>
+            <button type="button" class="btn btn-secondary" onclick="updateModels()">
+                🔄 Modelle von OpenAI aktualisieren
+            </button>
+            <p class="help-block" id="update-status"></p>
+        </div>
+        
+        <script>
+        function updateModels() {
+            document.getElementById('update-status').innerHTML = '⏳ Lade Modelle...';
+            fetch('admin.php?do=AIProductOptimizerModuleCenterModule/UpdateModels', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('update-status').innerHTML = '✓ ' + data.count + ' Modelle aktualisiert. Seite wird neu geladen...';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    document.getElementById('update-status').innerHTML = '❌ Fehler: ' + data.error;
+                }
+            });
+        }
+        </script>

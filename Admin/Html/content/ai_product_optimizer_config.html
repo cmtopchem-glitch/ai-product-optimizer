@@ -1,0 +1,70 @@
+<div class="page-header">
+    <h1>🤖 AI Product Optimizer - Konfiguration</h1>
+</div>
+
+<?php if(isset($_GET['success'])): ?>
+<div class="alert alert-success">
+    ✓ Konfiguration erfolgreich gespeichert!
+</div>
+<?php endif; ?>
+
+<?php if(isset($_GET['error'])): ?>
+<div class="alert alert-danger">
+    ✗ Bitte füllen Sie alle Pflichtfelder aus!
+</div>
+<?php endif; ?>
+
+<div class="frame-content-container">
+    <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
+        <div class="form-group">
+            <label for="api_key"><strong>OpenAI API Key *</strong></label>
+            <input type="password" 
+                   class="form-control" 
+                   id="api_key" 
+                   name="api_key" 
+                   value="<?php echo htmlspecialchars($data['api_key']); ?>" 
+                   placeholder="sk-..." 
+                   required>
+            <p class="help-block">
+                Ihren API Key erhalten Sie unter: 
+                <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>
+            </p>
+        </div>
+        
+        <div class="form-group">
+            <label for="model"><strong>OpenAI Modell</strong></label>
+            <select class="form-control" id="model" name="model">
+                <?php foreach($data['models'] as $value => $label): ?>
+                <option value="<?php echo $value; ?>" <?php echo ($data['model'] == $value) ? 'selected' : ''; ?>>
+                    <?php echo $label; ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        
+        <div class="btn-toolbar">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save"></i> Speichern
+            </button>
+            <a href="admin.php?do=Modules/ModuleCenter" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Zurück
+            </a>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <h3>📝 Verwendung</h3>
+    <ol>
+        <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
+        <li>Füllen Sie mindestens Produktname und Beschreibung aus</li>
+        <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
+        <li>Die generierten Texte werden automatisch eingefügt</li>
+    </ol>
+    
+    <h3>💰 Kosten</h3>
+    <ul>
+        <li><strong>gpt-4o:</strong> ca. $0.005-0.01 pro Produkt (4 Sprachen)</li>
+        <li><strong>gpt-4o-mini:</strong> ca. $0.001-0.002 pro Produkt (4 Sprachen)</li>
+    </ul>
+</div>
