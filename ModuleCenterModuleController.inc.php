@@ -1,6 +1,6 @@
 <?php
 
-require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Admin/Classes/AIProductOptimizerAjaxHandler.inc.php';
+require_once __DIR__ . '/Admin/Classes/AIProductOptimizerAjaxHandler.inc.php';
 
 class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCenterModuleController
 {
