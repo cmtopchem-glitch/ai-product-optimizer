@@ -15,6 +15,12 @@ var AIProductOptimizer = {
             console.log('Button geklickt!');
             self.generateContent();
         });
+
+        // Backup-Verwaltung Toggle
+        $('#ai-toggle-backups').off('click').on('click', function(e) {
+            e.preventDefault();
+            self.toggleBackupManagement();
+        });
     },
     
     generateContent: function() {
@@ -240,19 +246,19 @@ var AIProductOptimizer = {
     
     restoreBackup: function() {
         var self = this;
-        
+
         if (!confirm("Möchten Sie wirklich die Original-Texte wiederherstellen? Die aktuellen KI-generierten Texte werden überschrieben.")) {
             return;
         }
-        
+
         var productId = self.getProductId();
         if (!productId) {
             self.showError("Produkt-ID nicht gefunden");
             return;
         }
-        
+
         self.showStatus("Stelle Original-Texte wieder her...", "info");
-        
+
         $.ajax({
             url: "admin.php?do=AIProductOptimizerModuleCenterModule/Restore",
             method: "POST",
@@ -272,6 +278,183 @@ var AIProductOptimizer = {
             },
             error: function(xhr, status, error) {
                 self.showError("Verbindungsfehler: " + error);
+            }
+        });
+    },
+
+    toggleBackupManagement: function() {
+        var $backupManagement = $('#ai-backup-management');
+        if ($backupManagement.is(':visible')) {
+            $backupManagement.slideUp();
+        } else {
+            $backupManagement.slideDown();
+            this.loadBackups();
+        }
+    },
+
+    loadBackups: function() {
+        var self = this;
+        var productId = self.getProductId();
+
+        if (!productId) {
+            $('#ai-backup-list').html('<p class="text-danger">Produkt-ID nicht gefunden</p>');
+            return;
+        }
+
+        $.ajax({
+            url: 'admin.php?do=AIProductOptimizerModuleCenterModule/GetBackups',
+            method: 'GET',
+            dataType: 'json',
+            data: {
+                product_id: productId
+            },
+            success: function(response) {
+                if (response.success && response.backups) {
+                    self.renderBackupList(response.backups);
+                } else {
+                    $('#ai-backup-list').html('<p class="text-danger">Fehler beim Laden der Backups</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#ai-backup-list').html('<p class="text-danger">Verbindungsfehler: ' + error + '</p>');
+            }
+        });
+    },
+
+    renderBackupList: function(backups) {
+        var self = this;
+        var html = '';
+
+        if (backups.length === 0) {
+            html = '<p class="text-muted">Keine Backups vorhanden</p>';
+        } else {
+            html = '<table class="table table-striped table-hover" style="margin-bottom: 0;">';
+            html += '<thead>';
+            html += '<tr>';
+            html += '<th>Speicherdatum</th>';
+            html += '<th>Status</th>';
+            html += '<th>Sprachen</th>';
+            html += '<th style="text-align: right;">Aktionen</th>';
+            html += '</tr>';
+            html += '</thead>';
+            html += '<tbody>';
+
+            backups.forEach(function(backup) {
+                var date = new Date(backup.backup_date.replace(' ', 'T'));
+                var formattedDate = self.formatDate(date);
+                var statusBadge = backup.restored == 1
+                    ? '<span class="label label-default">Wiederhergestellt</span>'
+                    : '<span class="label label-success">Verfügbar</span>';
+
+                html += '<tr>';
+                html += '<td>' + formattedDate + '</td>';
+                html += '<td>' + statusBadge + '</td>';
+                html += '<td>' + backup.language_count + '</td>';
+                html += '<td style="text-align: right;">';
+
+                // Wiederherstellen-Button (nur wenn nicht bereits wiederhergestellt)
+                if (backup.restored == 0) {
+                    html += '<button class="btn btn-sm btn-warning" onclick="AIProductOptimizer.restoreSpecificBackup(' + backup.backup_id + ')" style="margin-right: 5px;">';
+                    html += '<i class="fa fa-undo"></i> Wiederherstellen';
+                    html += '</button>';
+                }
+
+                // Löschen-Button
+                html += '<button class="btn btn-sm btn-danger" onclick="AIProductOptimizer.deleteBackup(' + backup.backup_id + ')">';
+                html += '<i class="fa fa-trash"></i> Löschen';
+                html += '</button>';
+
+                html += '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            html += '</table>';
+        }
+
+        $('#ai-backup-list').html(html);
+    },
+
+    formatDate: function(date) {
+        var day = ('0' + date.getDate()).slice(-2);
+        var month = ('0' + (date.getMonth() + 1)).slice(-2);
+        var year = date.getFullYear();
+        var hours = ('0' + date.getHours()).slice(-2);
+        var minutes = ('0' + date.getMinutes()).slice(-2);
+
+        return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes + ' Uhr';
+    },
+
+    deleteBackup: function(backupId) {
+        var self = this;
+
+        if (!confirm('Möchten Sie dieses Backup wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+            return;
+        }
+
+        var productId = self.getProductId();
+        if (!productId) {
+            self.showError('Produkt-ID nicht gefunden');
+            return;
+        }
+
+        $.ajax({
+            url: 'admin.php?do=AIProductOptimizerModuleCenterModule/DeleteBackup',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                backup_id: backupId,
+                product_id: productId
+            },
+            success: function(response) {
+                if (response.success) {
+                    self.showStatus(response.message, 'success');
+                    self.loadBackups(); // Liste neu laden
+                } else {
+                    self.showError(response.error || 'Fehler beim Löschen');
+                }
+            },
+            error: function(xhr, status, error) {
+                self.showError('Verbindungsfehler: ' + error);
+            }
+        });
+    },
+
+    restoreSpecificBackup: function(backupId) {
+        var self = this;
+
+        if (!confirm('Möchten Sie dieses Backup wirklich wiederherstellen? Die aktuellen Produkttexte werden überschrieben.')) {
+            return;
+        }
+
+        var productId = self.getProductId();
+        if (!productId) {
+            self.showError('Produkt-ID nicht gefunden');
+            return;
+        }
+
+        self.showStatus('Stelle Backup wieder her...', 'info');
+
+        $.ajax({
+            url: 'admin.php?do=AIProductOptimizerModuleCenterModule/RestoreSpecificBackup',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                backup_id: backupId,
+                product_id: productId
+            },
+            success: function(response) {
+                if (response.success) {
+                    self.showStatus(response.message + ' - Seite wird neu geladen...', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    self.showError(response.error || 'Fehler beim Wiederherstellen');
+                }
+            },
+            error: function(xhr, status, error) {
+                self.showError('Verbindungsfehler: ' + error);
             }
         });
     }

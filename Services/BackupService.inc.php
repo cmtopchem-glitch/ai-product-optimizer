@@ -125,8 +125,128 @@ class BackupService
      */
     public static function cleanOldBackups()
     {
-        $query = "DELETE FROM rz_ai_optimizer_backup 
+        $query = "DELETE FROM rz_ai_optimizer_backup
                   WHERE backup_date < DATE_SUB(NOW(), INTERVAL 30 DAY)";
         xtc_db_query($query);
+    }
+
+    /**
+     * Holt alle Backups für ein Produkt gruppiert nach Backup-Datum
+     * @return array Array von Backups mit backup_date, backup_id (vom ersten Eintrag), restored, language_count
+     */
+    public static function getAllBackups($productId)
+    {
+        $query = "SELECT
+                    MIN(backup_id) as backup_id,
+                    backup_date,
+                    restored,
+                    COUNT(*) as language_count
+                  FROM rz_ai_optimizer_backup
+                  WHERE products_id = '" . (int)$productId . "'
+                  GROUP BY DATE_FORMAT(backup_date, '%Y-%m-%d %H:%i:%s'), restored
+                  ORDER BY backup_date DESC";
+        $result = xtc_db_query($query);
+
+        $backups = [];
+        while ($row = xtc_db_fetch_array($result)) {
+            $backups[] = [
+                'backup_id' => $row['backup_id'],
+                'backup_date' => $row['backup_date'],
+                'restored' => $row['restored'],
+                'language_count' => $row['language_count']
+            ];
+        }
+
+        return $backups;
+    }
+
+    /**
+     * Löscht ein spezifisches Backup (alle Sprachen mit gleichem Datum)
+     * @param int $backupId Die ID eines Backups aus der Gruppe
+     * @param int $productId Die Produkt-ID zur Sicherheit
+     * @return int Anzahl gelöschter Einträge
+     */
+    public static function deleteBackup($backupId, $productId)
+    {
+        // Hole das Backup-Datum des angegebenen Backups
+        $query = "SELECT backup_date FROM rz_ai_optimizer_backup
+                  WHERE backup_id = '" . (int)$backupId . "'
+                  AND products_id = '" . (int)$productId . "'";
+        $result = xtc_db_query($query);
+
+        if ($row = xtc_db_fetch_array($result)) {
+            $backupDate = $row['backup_date'];
+
+            // Lösche alle Einträge mit diesem Datum und dieser Produkt-ID
+            $deleteQuery = "DELETE FROM rz_ai_optimizer_backup
+                           WHERE products_id = '" . (int)$productId . "'
+                           AND backup_date = '" . xtc_db_input($backupDate) . "'";
+            xtc_db_query($deleteQuery);
+
+            return xtc_db_affected_rows();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Stellt ein spezifisches Backup wieder her
+     * @param int $backupId Die ID eines Backups aus der Gruppe
+     * @param int $productId Die Produkt-ID zur Sicherheit
+     * @return int Anzahl wiederhergestellter Sprachen
+     */
+    public static function restoreSpecificBackup($backupId, $productId)
+    {
+        // Hole das Backup-Datum des angegebenen Backups
+        $query = "SELECT backup_date FROM rz_ai_optimizer_backup
+                  WHERE backup_id = '" . (int)$backupId . "'
+                  AND products_id = '" . (int)$productId . "'";
+        $result = xtc_db_query($query);
+
+        if (!($dateRow = xtc_db_fetch_array($result))) {
+            return 0;
+        }
+
+        $backupDate = $dateRow['backup_date'];
+
+        // Hole alle Einträge mit diesem Datum
+        $query = "SELECT backup_id, languages_id, products_description, products_meta_title,
+                  products_meta_description, products_meta_keywords, products_keywords
+                  FROM rz_ai_optimizer_backup
+                  WHERE products_id = '" . (int)$productId . "'
+                  AND backup_date = '" . xtc_db_input($backupDate) . "'
+                  ORDER BY languages_id";
+        $result = xtc_db_query($query);
+
+        $restored = 0;
+        $backupIds = [];
+
+        while ($row = xtc_db_fetch_array($result)) {
+            $langId = $row['languages_id'];
+
+            // Stelle Daten wieder her
+            $updateQuery = "UPDATE products_description SET
+                products_description = '" . xtc_db_input($row['products_description']) . "',
+                products_meta_title = '" . xtc_db_input($row['products_meta_title']) . "',
+                products_meta_description = '" . xtc_db_input($row['products_meta_description']) . "',
+                products_meta_keywords = '" . xtc_db_input($row['products_meta_keywords']) . "',
+                products_keywords = '" . xtc_db_input($row['products_keywords']) . "'
+                WHERE products_id = '" . (int)$productId . "'
+                AND language_id = '" . (int)$langId . "'";
+
+            xtc_db_query($updateQuery);
+            $restored++;
+            $backupIds[] = $row['backup_id'];
+        }
+
+        // Markiere diese Backups als wiederhergestellt
+        if (!empty($backupIds)) {
+            $updateQuery = "UPDATE rz_ai_optimizer_backup
+                SET restored = 1
+                WHERE backup_id IN (" . implode(',', $backupIds) . ")";
+            xtc_db_query($updateQuery);
+        }
+
+        return $restored;
     }
 }

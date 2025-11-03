@@ -296,26 +296,114 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     {
         try {
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
-            
+
             $productId = $this->_getQueryParameter('product_id');
-            
+
             if (empty($productId)) {
                 throw new Exception('Produkt-ID fehlt');
             }
-            
+
             $hasBackup = BackupService::hasBackup($productId);
-            
+
             $this->_jsonResponse([
                 'success' => true,
                 'hasBackup' => $hasBackup,
                 'product_id' => $productId
             ]);
-            
+
         } catch (Exception $e) {
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage(),
                 'hasBackup' => false
+            ]);
+        }
+    }
+
+    public function actionGetBackups()
+    {
+        try {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
+
+            $productId = $this->_getQueryParameter('product_id');
+
+            if (empty($productId)) {
+                throw new Exception('Produkt-ID fehlt');
+            }
+
+            $backups = BackupService::getAllBackups($productId);
+
+            $this->_jsonResponse([
+                'success' => true,
+                'backups' => $backups
+            ]);
+
+        } catch (Exception $e) {
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function actionDeleteBackup()
+    {
+        try {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
+
+            $backupId = $this->_getPostData('backup_id');
+            $productId = $this->_getPostData('product_id');
+
+            if (empty($backupId) || empty($productId)) {
+                throw new Exception('Backup-ID und Produkt-ID sind erforderlich');
+            }
+
+            $deleted = BackupService::deleteBackup($backupId, $productId);
+
+            if ($deleted > 0) {
+                $this->_jsonResponse([
+                    'success' => true,
+                    'message' => 'Backup erfolgreich gelöscht (' . $deleted . ' Einträge)'
+                ]);
+            } else {
+                throw new Exception('Backup konnte nicht gelöscht werden');
+            }
+
+        } catch (Exception $e) {
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function actionRestoreSpecificBackup()
+    {
+        try {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
+
+            $backupId = $this->_getPostData('backup_id');
+            $productId = $this->_getPostData('product_id');
+
+            if (empty($backupId) || empty($productId)) {
+                throw new Exception('Backup-ID und Produkt-ID sind erforderlich');
+            }
+
+            $restored = BackupService::restoreSpecificBackup($backupId, $productId);
+
+            if ($restored > 0) {
+                $this->_jsonResponse([
+                    'success' => true,
+                    'message' => $restored . ' Sprache(n) wiederhergestellt'
+                ]);
+            } else {
+                throw new Exception('Backup konnte nicht wiederhergestellt werden');
+            }
+
+        } catch (Exception $e) {
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
             ]);
         }
     }
