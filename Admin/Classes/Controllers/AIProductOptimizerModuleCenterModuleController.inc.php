@@ -84,7 +84,10 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     
     public function actionUpdateModels()
     {
+        ob_start();
+
         try {
+            ob_clean();
             // Lade API Key
             $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_API_KEY' LIMIT 1";
             $result = xtc_db_query($query);
@@ -92,11 +95,11 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             if ($row = xtc_db_fetch_array($result)) {
                 $apiKey = $row['gm_value'];
             }
-            
+
             if (empty($apiKey)) {
                 throw new Exception('Bitte erst API Key speichern');
             }
-            
+
             // Rufe OpenAI Models API auf
             $ch = curl_init('https://api.openai.com/v1/models');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -104,21 +107,21 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 'Authorization: Bearer ' . $apiKey,
                 'Content-Type: application/json'
             ]);
-            
+
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             if ($httpCode !== 200) {
                 throw new Exception('OpenAI API Fehler: HTTP ' . $httpCode);
             }
-            
+
             $data = json_decode($response, true);
-            
+
             if (!isset($data['data']) || !is_array($data['data'])) {
                 throw new Exception('Ungültige API-Antwort');
             }
-            
+
             // Filtere nur GPT-Modelle und sortiere
             $models = [];
             foreach ($data['data'] as $model) {
@@ -132,24 +135,26 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                     ];
                 }
             }
-            
+
             // Sortiere nach Name
             usort($models, function($a, $b) {
                 return strcmp($b['id'], $a['id']);
             });
-            
+
             // Speichere in DB als JSON
             $modelsJson = json_encode($models);
             $this->_saveConfig('OPENAI_AVAILABLE_MODELS', $modelsJson);
             $this->_saveConfig('OPENAI_MODELS_UPDATED', date('Y-m-d H:i:s'));
-            
+
+            ob_clean();
             $this->_jsonResponse([
                 'success' => true,
                 'count' => count($models),
                 'models' => $models
             ]);
-            
+
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -173,10 +178,16 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     
     public function actionGenerate()
     {
+        // Start output buffering to catch any stray output
+        ob_start();
+
         try {
+            // Clean any previous output
+            ob_clean();
+
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/OpenAIService.inc.php';
-            
+
             $productId = $this->_getPostData('product_id');
             $productName = $this->_getPostData('product_name');
             $originalText = $this->_getPostData('original_text');
@@ -187,33 +198,33 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             if (!empty($productId)) {
                 BackupService::createBackup($productId);
             }
-            
+
             if (empty($productName) || empty($originalText)) {
                 throw new Exception('Produktname und Text sind erforderlich');
             }
-            
+
             $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_API_KEY' LIMIT 1";
             $result = xtc_db_query($query);
             $apiKey = '';
             if ($row = xtc_db_fetch_array($result)) {
                 $apiKey = $row['gm_value'];
             }
-            
+
             if (empty($apiKey)) {
                 throw new Exception('OpenAI API Key nicht konfiguriert');
             }
-            
+
             $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_MODEL' LIMIT 1";
             $result = xtc_db_query($query);
             $model = 'gpt-4o-mini';
             if ($row = xtc_db_fetch_array($result)) {
                 $model = $row['gm_value'];
             }
-            
+
             $service = new OpenAIService($apiKey, $model);
             $languages = $this->_getActiveLanguages();
             $results = array();
-            
+
             foreach ($languages as $lang) {
                 $results[$lang] = $service->generateSEOContent(
                     $productName,
@@ -222,9 +233,13 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                     array('category' => $category, 'brand' => $brand)
                 );
             }
-            
+
+            // Clean output buffer before sending JSON
+            ob_clean();
             $this->_jsonResponse(array('success' => true, 'data' => $results));
         } catch (Exception $e) {
+            // Clean output buffer before sending error JSON
+            ob_clean();
             $this->_jsonResponse(array('success' => false, 'error' => $e->getMessage()));
         }
     }
@@ -264,27 +279,32 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     
     public function actionRestore()
     {
+        ob_start();
+
         try {
+            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
-            
+
             $productId = $this->_getPostData('product_id');
-            
+
             if (empty($productId)) {
                 throw new Exception('Produkt-ID fehlt');
             }
-            
+
             if (!BackupService::hasBackup($productId)) {
                 throw new Exception('Kein Backup vorhanden');
             }
-            
+
             $restored = BackupService::restoreBackup($productId);
-            
+
+            ob_clean();
             $this->_jsonResponse([
                 'success' => true,
                 'message' => $restored . ' Sprache(n) wiederhergestellt'
             ]);
-            
+
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -294,7 +314,10 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     
     public function actionCheckBackup()
     {
+        ob_start();
+
         try {
+            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
 
             $productId = $this->_getQueryParameter('product_id');
@@ -305,6 +328,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
             $hasBackup = BackupService::hasBackup($productId);
 
+            ob_clean();
             $this->_jsonResponse([
                 'success' => true,
                 'hasBackup' => $hasBackup,
@@ -312,6 +336,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             ]);
 
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -322,7 +347,10 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
     public function actionGetBackups()
     {
+        ob_start();
+
         try {
+            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
 
             $productId = $this->_getQueryParameter('product_id');
@@ -333,12 +361,14 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
             $backups = BackupService::getAllBackups($productId);
 
+            ob_clean();
             $this->_jsonResponse([
                 'success' => true,
                 'backups' => $backups
             ]);
 
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -348,7 +378,10 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
     public function actionDeleteBackup()
     {
+        ob_start();
+
         try {
+            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
 
             $backupId = $this->_getPostData('backup_id');
@@ -361,6 +394,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             $deleted = BackupService::deleteBackup($backupId, $productId);
 
             if ($deleted > 0) {
+                ob_clean();
                 $this->_jsonResponse([
                     'success' => true,
                     'message' => 'Backup erfolgreich gelöscht (' . $deleted . ' Einträge)'
@@ -370,6 +404,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             }
 
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -379,7 +414,10 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
     public function actionRestoreSpecificBackup()
     {
+        ob_start();
+
         try {
+            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/BackupService.inc.php';
 
             $backupId = $this->_getPostData('backup_id');
@@ -392,6 +430,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             $restored = BackupService::restoreSpecificBackup($backupId, $productId);
 
             if ($restored > 0) {
+                ob_clean();
                 $this->_jsonResponse([
                     'success' => true,
                     'message' => $restored . ' Sprache(n) wiederhergestellt'
@@ -401,6 +440,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             }
 
         } catch (Exception $e) {
+            ob_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
