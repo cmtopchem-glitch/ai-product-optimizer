@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/Admin/Classes/AIProductOptimizerAjaxHandler.inc.php';
 
+if (!class_exists('AIProductOptimizerModuleCenterModuleController')) {
 class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCenterModuleController
 {
     public function proceed()
@@ -28,4 +29,5 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         
         return $this->contentView;
     }
+}
 }

@@ -9,6 +9,7 @@
    --------------------------------------------------------------
 */
 
+if (!class_exists('OpenAIService')) {
 class OpenAIService
 {
     private $apiKey;
@@ -242,4 +243,5 @@ private function getDefaultUserPrompt()
             'search_keywords' => isset($result['search_keywords']) ? $result['search_keywords'] : ''
         );
     }
+}
 }

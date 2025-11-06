@@ -1,4 +1,5 @@
 <?php
+if (!class_exists('AIProductOptimizerModuleCenterModuleController')) {
 class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCenterModuleController
 {
     protected function _init()
@@ -447,4 +448,5 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             ]);
         }
     }
+}
 }
