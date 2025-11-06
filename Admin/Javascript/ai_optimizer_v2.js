@@ -99,14 +99,20 @@ var AIProductOptimizer = {
                 }
                 
                 var content = data[lang];
-                
+
+                // Produktname
+                if (content.product_name) {
+                    $('input[name="products_name[' + langId + ']"]').val(content.product_name);
+                    console.log('✓ Produktname befüllt für', lang, '(ID:', langId + '):', content.product_name);
+                }
+
                 // Produktbeschreibung
                 var descFieldName = 'products_description_' + langId;
                 if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[descFieldName]) {
                     CKEDITOR.instances[descFieldName].setData(content.description);
                     console.log('✓ Beschreibung befüllt für', lang, '(ID:', langId + ')');
                 }
-                
+
                 // Meta-Felder
                 $('input[name="products_meta_title[' + langId + ']"]').val(content.meta_title);
                 $('textarea[name="products_meta_description[' + langId + ']"]').val(content.meta_description);

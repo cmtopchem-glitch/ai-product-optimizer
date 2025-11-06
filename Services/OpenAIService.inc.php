@@ -96,9 +96,11 @@ private function getDefaultUserPrompt()
            "WICHTIG:\n" .
            "- meta_keywords und search_keywords MÜSSEN gefüllt sein!\n" .
            "- Beide Felder MÜSSEN mindestens 5 Begriffe enthalten!\n" .
-           "- Keywords aus dem ORIGINAL-TEXT extrahieren und erweitern!\n\n" .
+           "- Keywords aus dem ORIGINAL-TEXT extrahieren und erweitern!\n" .
+           "- Produktname MUSS in die Zielsprache übersetzt werden!\n\n" .
            "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
+           '  "product_name": "Übersetzter Produktname in Zielsprache",'."\n" .
            '  "product_description": "Optimierter HTML-Text mit <p>, <h2>, <ul>, <strong>",'."\n" .
            '  "meta_title": "SEO Meta-Titel (max 60 Zeichen)",'."\n" .
            '  "meta_description": "Meta-Description (max 160 Zeichen)",'."\n" .
@@ -244,6 +246,7 @@ private function getDefaultUserPrompt()
         }
         
         return array(
+            'product_name' => isset($result['product_name']) ? $result['product_name'] : '',
             'description' => $result['product_description'],
             'meta_title' => isset($result['meta_title']) ? $result['meta_title'] : '',
             'meta_description' => isset($result['meta_description']) ? $result['meta_description'] : '',
