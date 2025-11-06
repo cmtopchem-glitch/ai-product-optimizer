@@ -9,14 +9,14 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     public function actionDefault()
     {
         $this->pageTitle = 'AI Product Optimizer - Konfiguration';
-        
+
         // Lade gespeicherte Werte
         $apiKey = '';
         $model = 'gpt-4o-mini';
         $availableModelsJson = '';
         $systemPrompt = '';
         $userPrompt = '';
-        
+
         $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_MODEL', 'OPENAI_AVAILABLE_MODELS', 'OPENAI_SYSTEM_PROMPT', 'OPENAI_USER_PROMPT')";
         $result = xtc_db_query($query);
         while ($row = xtc_db_fetch_array($result)) {
@@ -39,16 +39,19 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         if (!empty($availableModelsJson)) {
             $availableModels = json_decode($availableModelsJson, true);
         }
-        
+
         $success = $this->_getQueryParameter('success') == '1';
         $error = $this->_getQueryParameter('error') == '1';
-        
+
+        // Prüfe auf Backup-Verzeichnisse im Modul-Pfad
+        $backupWarning = $this->_checkForBackupDirectories();
+
         // Template laden und Variablen zuweisen
         $coo_text_mgr = MainFactory::create_object('LanguageTextManager', array('ai_product_optimizer', $_SESSION['languages_id']));
         $smarty = new Smarty();
         $smarty->template_dir = DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Admin/Templates/';
         $smarty->compile_dir = DIR_FS_CATALOG . 'cache/smarty/';
-        
+
         $smarty->assign('pageTitle', $this->pageTitle);
         $smarty->assign('apiKey', $apiKey);
         $smarty->assign('model', $model);
@@ -57,11 +60,89 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         $smarty->assign('userPrompt', $userPrompt);
         $smarty->assign('success', $success);
         $smarty->assign('error', $error);
-        
+        $smarty->assign('backupWarning', $backupWarning);
+
         $html = $smarty->fetch('config_page.html');
-        
+
         echo $html;
         exit;
+    }
+
+    /**
+     * Prüft auf problematische Backup-Verzeichnisse im Modul-Pfad
+     * @return array|null Warnung mit Details oder null wenn keine gefunden
+     */
+    private function _checkForBackupDirectories()
+    {
+        $modulePath = DIR_FS_CATALOG . 'GXModules/REDOzone/';
+        $backupDirs = [];
+
+        if (!is_dir($modulePath)) {
+            return null;
+        }
+
+        // Scanne Verzeichnis nach Backup-Ordnern
+        $dirs = scandir($modulePath);
+        foreach ($dirs as $dir) {
+            if ($dir === '.' || $dir === '..') {
+                continue;
+            }
+
+            $fullPath = $modulePath . $dir;
+            if (!is_dir($fullPath)) {
+                continue;
+            }
+
+            // Prüfe auf typische Backup-Muster
+            if (preg_match('/AIProductOptimizer.*BACKUP/i', $dir) ||
+                preg_match('/AIProductOptimizer_\d{8}/i', $dir) ||
+                preg_match('/AIProductOptimizer.*\d{14}/i', $dir)) {
+                $backupDirs[] = [
+                    'name' => $dir,
+                    'path' => $fullPath,
+                    'size' => $this->_getDirectorySize($fullPath)
+                ];
+            }
+        }
+
+        if (empty($backupDirs)) {
+            return null;
+        }
+
+        return [
+            'count' => count($backupDirs),
+            'directories' => $backupDirs,
+            'message' => 'WARNUNG: Es wurden ' . count($backupDirs) . ' Backup-Verzeichnis(se) im Modul-Pfad gefunden. Diese können "duplicate class declaration" Fehler verursachen!'
+        ];
+    }
+
+    /**
+     * Berechnet die Größe eines Verzeichnisses
+     * @param string $path Verzeichnispfad
+     * @return string Formatierte Größe (z.B. "1.5 MB")
+     */
+    private function _getDirectorySize($path)
+    {
+        $size = 0;
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                $size += $file->getSize();
+            }
+        }
+
+        // Formatiere Größe
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $unitIndex = 0;
+        while ($size >= 1024 && $unitIndex < count($units) - 1) {
+            $size /= 1024;
+            $unitIndex++;
+        }
+
+        return round($size, 2) . ' ' . $units[$unitIndex];
     }
     
     public function actionSave()

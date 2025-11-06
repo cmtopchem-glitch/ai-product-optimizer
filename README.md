@@ -255,20 +255,47 @@ Parameter:
 
 ### Häufige Probleme
 
-#### 1. "OpenAI API Key nicht konfiguriert"
+#### 1. "Fatal error: Cannot declare class AIProductOptimizerModuleCenterModuleController"
+**Ursache**: Backup-Verzeichnisse im Modul-Pfad verursachen Konflikte
+**Symptome**:
+- Fehler: "because the name is already in use"
+- Tritt bei Verzeichnissen wie `AIProductOptimizer_BACKUP_20251102_194355` auf
+- ClassFinder lädt Klassen aus mehreren Verzeichnissen
+
+**Lösung**:
+1. **Sofortige Behebung**: Backup-Verzeichnisse aus dem Modul-Pfad entfernen
+   ```bash
+   # Auf dem Server:
+   cd GXModules/REDOzone/
+   # Backup-Verzeichnisse außerhalb des Modul-Pfads verschieben
+   mv AIProductOptimizer_BACKUP_* /backups/module_backups/
+   ```
+
+2. **Dauerhafteösung**: Backups niemals im aktiven Modul-Pfad erstellen
+   - ❌ FALSCH: `GXModules/REDOzone/AIProductOptimizer_BACKUP_20251102/`
+   - ✅ RICHTIG: `/backups/modules/AIProductOptimizer_20251102/`
+
+3. **Prüfung durchführen**: Warnung im Admin-Bereich beachten (falls vorhanden)
+
+**Wichtig**:
+- Gambio's ClassFinder scannt alle Verzeichnisse unter `GXModules/`
+- Backup-Verzeichnisse mit altem Code (ohne `class_exists()` Checks) verursachen Konflikte
+- Verwende für Backups einen separaten Ordner außerhalb von `GXModules/`
+
+#### 2. "OpenAI API Key nicht konfiguriert"
 **Lösung**: API Key in der Konfiguration eingeben
 
-#### 2. "Bitte füllen Sie zunächst Produktname und Beschreibung aus"
+#### 3. "Bitte füllen Sie zunächst Produktname und Beschreibung aus"
 **Lösung**: Mindestens Produktname und deutsche Beschreibung eingeben
 
-#### 3. "Verbindungsfehler"
+#### 4. "Verbindungsfehler"
 **Ursachen**:
 - Keine Internetverbindung
 - API Key ungültig
 - OpenAI Service nicht erreichbar
 **Lösung**: Verbindung und API Key überprüfen
 
-#### 4. Restore-Button wird nicht angezeigt
+#### 5. Restore-Button wird nicht angezeigt
 **Ursache**: Kein Backup vorhanden
 **Lösung**: Erst KI-Generierung durchführen
 

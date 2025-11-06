@@ -7,6 +7,12 @@
         .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; }
         .alert-success { background-color: #d4edda; color: #155724; }
         .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+        .backup-warning { margin-bottom: 30px; }
+        .backup-dirs { margin: 15px 0; padding: 10px; background: #fffbf0; border-left: 4px solid #ff9800; }
+        .backup-dirs ul { margin: 10px 0; padding-left: 20px; }
+        .backup-dirs li { margin: 5px 0; font-family: monospace; font-size: 13px; }
+        .backup-dirs code { background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #ddd; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
         .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; }
@@ -31,7 +37,48 @@
     {if $error}
     <div class="alert alert-danger">✗ Bitte API Key eingeben!</div>
     {/if}
-    
+
+    {if $backupWarning}
+    <div class="alert alert-warning backup-warning">
+        <h3 style="margin-top: 0;">⚠️ WARNUNG: Backup-Verzeichnisse gefunden!</h3>
+        <p><strong>{$backupWarning.message}</strong></p>
+
+        <div class="backup-dirs">
+            <p><strong>Gefundene Backup-Verzeichnisse ({$backupWarning.count}):</strong></p>
+            <ul>
+                {foreach from=$backupWarning.directories item=dir}
+                <li><code>{$dir.name}</code> ({$dir.size})</li>
+                {/foreach}
+            </ul>
+        </div>
+
+        <h4>🔧 Sofortige Behebung erforderlich:</h4>
+        <p>Diese Backup-Verzeichnisse befinden sich im aktiven Modul-Pfad und können zu folgenden Fehlern führen:</p>
+        <ul>
+            <li><strong>Fatal error: Cannot declare class AIProductOptimizerModuleCenterModuleController</strong></li>
+            <li>Kompletter Shop-Ausfall durch PHP-Fehler</li>
+            <li>ClassFinder-Konflikte</li>
+        </ul>
+
+        <h4>📋 Lösung:</h4>
+        <ol>
+            <li>Verbinden Sie sich per SSH/FTP mit Ihrem Server</li>
+            <li>Navigieren Sie zu: <code>GXModules/REDOzone/</code></li>
+            <li>Verschieben Sie die Backup-Verzeichnisse außerhalb des Modul-Pfads:
+                <br><code style="display: block; margin: 10px 0; padding: 10px; background: #333; color: #0f0;">
+                # Beispiel für SSH:<br>
+                cd /srv/www/IhrShop/GXModules/REDOzone/<br>
+                mkdir -p /backups/module_backups/<br>
+                mv AIProductOptimizer_BACKUP_* /backups/module_backups/
+                </code>
+            </li>
+            <li>Laden Sie diese Seite neu um zu prüfen ob die Warnung verschwunden ist</li>
+        </ol>
+
+        <p><strong>WICHTIG:</strong> Erstellen Sie zukünftige Backups immer außerhalb von <code>GXModules/</code>!</p>
+    </div>
+    {/if}
+
     <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
         
         <h2>🔑 API-Einstellungen</h2>
