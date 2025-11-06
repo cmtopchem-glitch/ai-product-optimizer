@@ -12,16 +12,20 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
         // Lade gespeicherte Werte
         $apiKey = '';
+        $projectId = '';
         $model = 'gpt-4o-mini';
         $availableModelsJson = '';
         $systemPrompt = '';
         $userPrompt = '';
 
-        $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_MODEL', 'OPENAI_AVAILABLE_MODELS', 'OPENAI_SYSTEM_PROMPT', 'OPENAI_USER_PROMPT')";
+        $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID', 'OPENAI_MODEL', 'OPENAI_AVAILABLE_MODELS', 'OPENAI_SYSTEM_PROMPT', 'OPENAI_USER_PROMPT')";
         $result = xtc_db_query($query);
         while ($row = xtc_db_fetch_array($result)) {
             if ($row['gm_key'] == 'OPENAI_API_KEY') {
                 $apiKey = $row['gm_value'];
+            }
+            if ($row['gm_key'] == 'OPENAI_PROJECT_ID') {
+                $projectId = $row['gm_value'];
             }
             if ($row['gm_key'] == 'OPENAI_MODEL') {
                 $model = $row['gm_value'];
@@ -54,6 +58,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
         $smarty->assign('pageTitle', $this->pageTitle);
         $smarty->assign('apiKey', $apiKey);
+        $smarty->assign('projectId', $projectId);
         $smarty->assign('model', $model);
         $smarty->assign('availableModels', $availableModels);
         $smarty->assign('systemPrompt', $systemPrompt);
@@ -148,18 +153,20 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
     public function actionSave()
     {
         $apiKey = $this->_getPostData('openai_key');
+        $projectId = $this->_getPostData('project_id');
         $model = $this->_getPostData('model');
-        
+
         if (empty($apiKey)) {
             header('Location: admin.php?do=AIProductOptimizerModuleCenterModule&error=1');
             exit;
         }
-        
+
         $this->_saveConfig('OPENAI_API_KEY', $apiKey);
+        $this->_saveConfig('OPENAI_PROJECT_ID', $projectId);
         $this->_saveConfig('OPENAI_MODEL', $model);
         $this->_saveConfig('OPENAI_SYSTEM_PROMPT', $this->_getPostData('system_prompt'));
         $this->_saveConfig('OPENAI_USER_PROMPT', $this->_getPostData('user_prompt'));
-        
+
         header('Location: admin.php?do=AIProductOptimizerModuleCenterModule&success=1');
         exit;
     }
@@ -170,20 +177,32 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
         try {
             ob_clean();
-            // Lade API Key
-            $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_API_KEY' LIMIT 1";
+            // Lade API Key und Project ID
+            $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID')";
             $result = xtc_db_query($query);
             $apiKey = '';
-            if ($row = xtc_db_fetch_array($result)) {
-                $apiKey = $row['gm_value'];
+            $projectId = '';
+            while ($row = xtc_db_fetch_array($result)) {
+                if ($row['gm_key'] == 'OPENAI_API_KEY') {
+                    $apiKey = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'OPENAI_PROJECT_ID') {
+                    $projectId = $row['gm_value'];
+                }
             }
 
             if (empty($apiKey)) {
                 throw new Exception('Bitte erst API Key speichern');
             }
 
+            // Baue API-URL mit optionalem Project-Parameter
+            $apiUrl = 'https://api.openai.com/v1/models';
+            if (!empty($projectId)) {
+                $apiUrl .= '?project=' . urlencode($projectId);
+            }
+
             // Rufe OpenAI Models API auf
-            $ch = curl_init('https://api.openai.com/v1/models');
+            $ch = curl_init($apiUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Authorization: Bearer ' . $apiKey,
@@ -285,25 +304,29 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 throw new Exception('Produktname und Text sind erforderlich');
             }
 
-            $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_API_KEY' LIMIT 1";
+            // Lade API Key, Project ID und Model
+            $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID', 'OPENAI_MODEL')";
             $result = xtc_db_query($query);
             $apiKey = '';
-            if ($row = xtc_db_fetch_array($result)) {
-                $apiKey = $row['gm_value'];
+            $projectId = '';
+            $model = 'gpt-4o-mini';
+            while ($row = xtc_db_fetch_array($result)) {
+                if ($row['gm_key'] == 'OPENAI_API_KEY') {
+                    $apiKey = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'OPENAI_PROJECT_ID') {
+                    $projectId = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'OPENAI_MODEL') {
+                    $model = $row['gm_value'];
+                }
             }
 
             if (empty($apiKey)) {
                 throw new Exception('OpenAI API Key nicht konfiguriert');
             }
 
-            $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_MODEL' LIMIT 1";
-            $result = xtc_db_query($query);
-            $model = 'gpt-4o-mini';
-            if ($row = xtc_db_fetch_array($result)) {
-                $model = $row['gm_value'];
-            }
-
-            $service = new OpenAIService($apiKey, $model);
+            $service = new OpenAIService($apiKey, $model, $projectId);
             $languages = $this->_getActiveLanguages();
             $results = array();
 

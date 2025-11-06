@@ -38,6 +38,7 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
         // Konfigurationseinträge erstellen
         $this->_createConfigEntry('MODULE_AI_OPTIMIZER_OPENAI_API_KEY', '', 6, 1);
         $this->_createConfigEntry('MODULE_AI_OPTIMIZER_MODEL', 'gpt-4o', 6, 2);
+        $this->_createConfigEntry('MODULE_AI_OPTIMIZER_PROJECT_ID', '', 6, 3);
     }
     
     /**

@@ -36,14 +36,17 @@ if (!class_exists('AIProductOptimizerAjaxHandler')) {
             if (empty($api_key)) {
                 throw new Exception('API Key nicht konfiguriert');
             }
-            
+
+            // Lade optional Project ID
+            $project_id = gm_get_conf('AIPRODUCTOPTIMIZER_PROJECT_ID');
+
             // OpenAI API Call
             $prompt = "Erstelle eine professionelle Produktbeschreibung für: $productName\n\n";
             if (!empty($currentDescription)) {
                 $prompt .= "Aktuelle Beschreibung: $currentDescription\n\n";
             }
             $prompt .= "Die Beschreibung sollte SEO-optimiert sein und Kaufanreize schaffen.";
-            
+
             $data = [
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
@@ -53,8 +56,14 @@ if (!class_exists('AIProductOptimizerAjaxHandler')) {
                 'max_tokens' => 500,
                 'temperature' => 0.7
             ];
-            
-            $ch = curl_init('https://api.openai.com/v1/chat/completions');
+
+            // Baue API-URL mit optionalem Project-Parameter
+            $apiUrl = 'https://api.openai.com/v1/chat/completions';
+            if (!empty($project_id)) {
+                $apiUrl .= '?project=' . urlencode($project_id);
+            }
+
+            $ch = curl_init($apiUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
