@@ -88,7 +88,13 @@
             <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
             <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
         </div>
-        
+
+        <div class="form-group">
+            <label>OpenAI Project ID (optional)</label>
+            <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
+            <p class="help-block">Project ID für OpenAI Project-Keys (erforderlich für neuere Modelle wie GPT-5). Format: proj_xxxxxxxxxx</p>
+        </div>
+
         <div class="form-group">
             <label>Modell</label>
             <select class="form-control" name="model" id="model-select">

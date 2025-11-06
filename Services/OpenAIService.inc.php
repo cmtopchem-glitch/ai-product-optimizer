@@ -13,15 +13,17 @@ if (!class_exists('OpenAIService')) {
 class OpenAIService
 {
     private $apiKey;
+    private $projectId;
     private $apiUrl = 'https://api.openai.com/v1/chat/completions';
     private $model = 'gpt-4o';
     private $systemPrompt;
     private $userPrompt;
-    
-    public function __construct($apiKey, $model = 'gpt-4o')
+
+    public function __construct($apiKey, $model = 'gpt-4o', $projectId = '')
     {
         $this->apiKey = $apiKey;
         $this->model = $model;
+        $this->projectId = $projectId;
         $this->loadPrompts();
     }
     
@@ -185,8 +187,14 @@ private function getDefaultUserPrompt()
             'temperature' => 0.7,
             'max_tokens' => 2000
         );
-        
-        $ch = curl_init($this->apiUrl);
+
+        // Baue API-URL mit optionalem Project-Parameter
+        $apiUrl = $this->apiUrl;
+        if (!empty($this->projectId)) {
+            $apiUrl .= '?project=' . urlencode($this->projectId);
+        }
+
+        $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
