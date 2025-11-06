@@ -1,33 +1,15 @@
 <?php
+/**
+ * ModuleCenterModuleController Loader
+ *
+ * This file serves as a loader/alias for the actual controller class.
+ * It simply includes the main controller to avoid duplicate class declarations
+ * when backup directories exist in the module path.
+ *
+ * DO NOT define classes here - only include the actual controller.
+ */
 
-require_once __DIR__ . '/Admin/Classes/AIProductOptimizerAjaxHandler.inc.php';
-
-if (!class_exists('AIProductOptimizerModuleCenterModuleController')) {
-class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCenterModuleController
-{
-    public function proceed()
-    {
-        parent::proceed();
-        
-        // CSS laden
-        $this->assets->add_style('aiproductoptimizer.css', 
-            'GXModules/REDOzone/AIProductOptimizer/Admin/Styles/aiproductoptimizer.css');
-        
-        // JavaScript laden
-        $this->assets->add_script('ai_optimizer_v2.js',
-            'GXModules/REDOzone/AIProductOptimizer/Admin/Javascript/ai_optimizer_v2.js');
-    }
-    
-    public function actionDefault()
-    {
-        $this->contentView->set_template_dir(DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Admin/Html/');
-        $this->contentView->set_content_template('settings.html');
-        
-        // API Key aus Datenbank holen
-        $api_key = gm_get_conf('AIPRODUCTOPTIMIZER_API_KEY');
-        $this->contentView->set_data('API_KEY', $api_key);
-        
-        return $this->contentView;
-    }
-}
+// Include the actual controller class (only define it in one place)
+if (!class_exists('AIProductOptimizerModuleCenterModuleController', false)) {
+    require_once __DIR__ . '/Admin/Classes/Controllers/AIProductOptimizerModuleCenterModuleController.inc.php';
 }
