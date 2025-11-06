@@ -1,6 +1,7 @@
 <?php
 
-class AIProductOptimizerAjaxHandler extends AjaxHandler
+if (!class_exists('AIProductOptimizerAjaxHandler')) {
+    class AIProductOptimizerAjaxHandler extends AjaxHandler
 {
     public function get_permission_status($p_rights_name = null)
     {
@@ -114,4 +115,5 @@ class AIProductOptimizerAjaxHandler extends AjaxHandler
         
         return $this->v_output_buffer;
     }
+}
 }
