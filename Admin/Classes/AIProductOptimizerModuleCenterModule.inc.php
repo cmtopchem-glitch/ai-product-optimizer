@@ -12,6 +12,7 @@
  * AI Product Optimizer Module für Gambio GX 4.8
  * Generiert SEO-optimierte Produkttexte mit OpenAI API
  */
+if (!class_exists('AIProductOptimizerModuleCenterModule')) {
 class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
 {
     /**
@@ -100,4 +101,5 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
             'date_added' => date('Y-m-d H:i:s')
         ));
     }
+}
 }

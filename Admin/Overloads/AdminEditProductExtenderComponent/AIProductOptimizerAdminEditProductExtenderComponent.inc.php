@@ -1,4 +1,5 @@
 <?php
+if (!class_exists('AIProductOptimizerAdminEditProductExtenderComponent')) {
 class AIProductOptimizerAdminEditProductExtenderComponent extends AIProductOptimizerAdminEditProductExtenderComponent_parent
 {
     public function proceed()
@@ -77,4 +78,5 @@ class AIProductOptimizerAdminEditProductExtenderComponent extends AIProductOptim
             'content' => $content
         );
     }
+}
 }

@@ -9,6 +9,7 @@
    --------------------------------------------------------------
 */
 
+if (!class_exists('BackupService')) {
 class BackupService
 {
     /**
@@ -249,4 +250,5 @@ class BackupService
 
         return $restored;
     }
+}
 }

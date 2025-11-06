@@ -1,5 +1,6 @@
 <?php
 
+if (!class_exists('AIProductOptimizer')) {
 class AIProductOptimizer extends AbstractModuleCenterModule
 {
     protected function _init()
@@ -8,4 +9,5 @@ class AIProductOptimizer extends AbstractModuleCenterModule
         $this->description = 'KI-gestützte Produktbeschreibungen mit OpenAI';
         $this->sortOrder = 10000;
     }
+}
 }
