@@ -17,8 +17,11 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         $availableModelsJson = '';
         $systemPrompt = '';
         $userPrompt = '';
+        $visionModel = 'gpt-4o';
+        $visionSystemPrompt = '';
+        $visionUserPrompt = '';
 
-        $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID', 'OPENAI_MODEL', 'OPENAI_AVAILABLE_MODELS', 'OPENAI_SYSTEM_PROMPT', 'OPENAI_USER_PROMPT')";
+        $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID', 'OPENAI_MODEL', 'OPENAI_AVAILABLE_MODELS', 'OPENAI_SYSTEM_PROMPT', 'OPENAI_USER_PROMPT', 'VISION_MODEL', 'VISION_SYSTEM_PROMPT', 'VISION_USER_PROMPT')";
         $result = xtc_db_query($query);
         while ($row = xtc_db_fetch_array($result)) {
             if ($row['gm_key'] == 'OPENAI_API_KEY') {
@@ -38,6 +41,15 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             }
             if ($row['gm_key'] == 'OPENAI_USER_PROMPT') {
                 $userPrompt = $row['gm_value'];
+            }
+            if ($row['gm_key'] == 'VISION_MODEL') {
+                $visionModel = $row['gm_value'];
+            }
+            if ($row['gm_key'] == 'VISION_SYSTEM_PROMPT') {
+                $visionSystemPrompt = $row['gm_value'];
+            }
+            if ($row['gm_key'] == 'VISION_USER_PROMPT') {
+                $visionUserPrompt = $row['gm_value'];
             }
         }
         if (!empty($availableModelsJson)) {
@@ -63,6 +75,9 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         $smarty->assign('availableModels', $availableModels);
         $smarty->assign('systemPrompt', $systemPrompt);
         $smarty->assign('userPrompt', $userPrompt);
+        $smarty->assign('visionModel', $visionModel);
+        $smarty->assign('visionSystemPrompt', $visionSystemPrompt);
+        $smarty->assign('visionUserPrompt', $visionUserPrompt);
         $smarty->assign('success', $success);
         $smarty->assign('error', $error);
         $smarty->assign('backupWarning', $backupWarning);
@@ -166,6 +181,11 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         $this->_saveConfig('OPENAI_MODEL', $model);
         $this->_saveConfig('OPENAI_SYSTEM_PROMPT', $this->_getPostData('system_prompt'));
         $this->_saveConfig('OPENAI_USER_PROMPT', $this->_getPostData('user_prompt'));
+
+        // Vision/ALT-Text Konfiguration speichern
+        $this->_saveConfig('VISION_MODEL', $this->_getPostData('vision_model'));
+        $this->_saveConfig('VISION_SYSTEM_PROMPT', $this->_getPostData('vision_system_prompt'));
+        $this->_saveConfig('VISION_USER_PROMPT', $this->_getPostData('vision_user_prompt'));
 
         header('Location: admin.php?do=AIProductOptimizerModuleCenterModule&success=1');
         exit;
@@ -846,17 +866,29 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 exit;
             }
 
-            // Lade API Key und Project ID
-            $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID')";
+            // Lade API Key, Project ID und Vision-Konfiguration
+            $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID', 'VISION_MODEL', 'VISION_SYSTEM_PROMPT', 'VISION_USER_PROMPT')";
             $result = xtc_db_query($query);
             $apiKey = '';
             $projectId = '';
+            $visionModel = 'gpt-4o';
+            $visionSystemPrompt = '';
+            $visionUserPrompt = '';
             while ($row = xtc_db_fetch_array($result)) {
                 if ($row['gm_key'] == 'OPENAI_API_KEY') {
                     $apiKey = $row['gm_value'];
                 }
                 if ($row['gm_key'] == 'OPENAI_PROJECT_ID') {
                     $projectId = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'VISION_MODEL') {
+                    $visionModel = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'VISION_SYSTEM_PROMPT') {
+                    $visionSystemPrompt = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'VISION_USER_PROMPT') {
+                    $visionUserPrompt = $row['gm_value'];
                 }
             }
 
@@ -879,8 +911,8 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             // Lade VisionService
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/VisionService.inc.php';
 
-            // Generiere ALT-Texte
-            $visionService = new VisionService($apiKey, $projectId);
+            // Generiere ALT-Texte mit konfigurierbaren Werten
+            $visionService = new VisionService($apiKey, $projectId, $visionModel, $visionSystemPrompt, $visionUserPrompt);
             $altTexts = $visionService->generateAltTexts($imageUrl, $productName, $languages);
 
             echo json_encode([

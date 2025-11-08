@@ -14,16 +14,60 @@ class VisionService
 {
     private $apiKey;
     private $projectId;
+    private $model;
+    private $systemPrompt;
+    private $userPromptTemplate;
 
     /**
      * Constructor
      * @param string $apiKey OpenAI API Key
      * @param string $projectId Optional Project ID
+     * @param string $model Vision Model (gpt-4o oder gpt-4o-mini)
+     * @param string $systemPrompt System-Prompt für Bildanalyse
+     * @param string $userPromptTemplate User-Prompt Template mit Platzhaltern
      */
-    public function __construct($apiKey, $projectId = '')
+    public function __construct($apiKey, $projectId = '', $model = 'gpt-4o', $systemPrompt = '', $userPromptTemplate = '')
     {
         $this->apiKey = $apiKey;
         $this->projectId = $projectId;
+        $this->model = !empty($model) ? $model : 'gpt-4o';
+
+        // Standardwerte setzen, falls leer
+        $this->systemPrompt = !empty($systemPrompt)
+            ? $systemPrompt
+            : 'Du bist ein Experte für barrierefreie Bildbeschreibungen. Du erstellst präzise, informative ALT-Texte für Produktbilder, die für Screenreader-Nutzer optimal geeignet sind.';
+
+        $this->userPromptTemplate = !empty($userPromptTemplate)
+            ? $userPromptTemplate
+            : $this->getDefaultUserPrompt();
+    }
+
+    /**
+     * Gibt den Standard User-Prompt zurück
+     * @return string
+     */
+    private function getDefaultUserPrompt()
+    {
+        return 'Analysiere dieses Produktbild und erstelle barrierefreie ALT-Texte.
+
+Produkt: {PRODUCT_NAME}
+
+WICHTIG für barrierefreie ALT-Texte:
+- Beschreibe WAS auf dem Bild zu sehen ist (nicht WIE es aussieht)
+- Fokussiere auf das Produkt und seine erkennbaren Eigenschaften
+- Halte die Beschreibung präzise aber informativ (ca. 50-100 Zeichen)
+- Vermeide subjektive Bewertungen wie "schön" oder "hochwertig"
+- Beschreibe erkennbare Details: Farbe, Form, Material, Anzahl
+
+Erstelle ALT-Texte für folgende Sprachen:
+{LANGUAGES}
+
+Antworte NUR mit einem JSON-Objekt in diesem Format:
+{
+  "de": "ALT-Text in Deutsch",
+  "en": "ALT-text in English",
+  ...
+}';
     }
 
     /**
@@ -37,9 +81,7 @@ class VisionService
      */
     public function generateAltTexts($imageUrl, $productName, $languages)
     {
-        // Erstelle Prompt für Bildanalyse
-        $systemPrompt = 'Du bist ein Experte für barrierefreie Bildbeschreibungen. Du erstellst präzise, informative ALT-Texte für Produktbilder, die für Screenreader-Nutzer optimal geeignet sind.';
-
+        // Erstelle Sprachliste für den Prompt
         $languageNames = [
             'de' => 'Deutsch',
             'en' => 'English',
@@ -51,35 +93,24 @@ class VisionService
             'am' => 'Deutsch' // Fallback für unbekannte Codes
         ];
 
-        $userPrompt = "Analysiere dieses Produktbild und erstelle barrierefreie ALT-Texte.\n\n";
-        $userPrompt .= "Produkt: " . $productName . "\n\n";
-        $userPrompt .= "WICHTIG für barrierefreie ALT-Texte:\n";
-        $userPrompt .= "- Beschreibe WAS auf dem Bild zu sehen ist (nicht WIE es aussieht)\n";
-        $userPrompt .= "- Fokussiere auf das Produkt und seine erkennbaren Eigenschaften\n";
-        $userPrompt .= "- Halte die Beschreibung präzise aber informativ (ca. 50-100 Zeichen)\n";
-        $userPrompt .= "- Vermeide subjektive Bewertungen wie 'schön' oder 'hochwertig'\n";
-        $userPrompt .= "- Beschreibe erkennbare Details: Farbe, Form, Material, Anzahl\n\n";
-
-        $userPrompt .= "Erstelle ALT-Texte für folgende Sprachen:\n";
+        $languageList = '';
         foreach ($languages as $lang) {
             $langName = isset($languageNames[$lang]) ? $languageNames[$lang] : $lang;
-            $userPrompt .= "- " . strtoupper($lang) . " (" . $langName . ")\n";
+            $languageList .= "- " . strtoupper($lang) . " (" . $langName . ")\n";
         }
 
-        $userPrompt .= "\nAntworte NUR mit einem JSON-Objekt in diesem Format:\n";
-        $userPrompt .= "{\n";
-        foreach ($languages as $lang) {
-            $userPrompt .= '  "' . $lang . '": "ALT-Text in dieser Sprache",'."\n";
-        }
-        $userPrompt = rtrim($userPrompt, ",\n") . "\n}\n";
+        // Ersetze Platzhalter im User-Prompt-Template
+        $userPrompt = $this->userPromptTemplate;
+        $userPrompt = str_replace('{PRODUCT_NAME}', $productName, $userPrompt);
+        $userPrompt = str_replace('{LANGUAGES}', trim($languageList), $userPrompt);
 
         // API Call mit Vision
         $data = [
-            'model' => 'gpt-4o', // GPT-4o unterstützt Vision
+            'model' => $this->model,
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => $systemPrompt
+                    'content' => $this->systemPrompt
                 ],
                 [
                     'role' => 'user',
