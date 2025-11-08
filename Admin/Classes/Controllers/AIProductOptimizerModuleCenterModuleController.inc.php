@@ -719,11 +719,17 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
+        // Clear any existing output
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
         ob_start();
 
         try {
-            ob_clean();
-            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+            // Lade PromptLibraryService falls noch nicht geladen
+            if (!class_exists('PromptLibraryService')) {
+                require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+            }
 
             $promptId = $this->_getPostData('prompt_id');
 
@@ -731,20 +737,20 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 throw new Exception('Prompt-ID fehlt');
             }
 
+            // Lösche den Prompt
             $success = PromptLibraryService::deletePrompt($promptId);
 
-            if (!$success) {
-                throw new Exception('Prompt konnte nicht gelöscht werden');
-            }
+            // Auch wenn keine Zeilen betroffen waren, ist es kein Fehler
+            // (Prompt könnte bereits gelöscht worden sein)
 
-            ob_clean();
+            ob_end_clean();
             $this->_jsonResponse([
                 'success' => true,
                 'message' => 'Prompt erfolgreich gelöscht'
             ]);
 
         } catch (Exception $e) {
-            ob_clean();
+            ob_end_clean();
             $this->_jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
