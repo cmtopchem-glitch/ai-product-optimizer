@@ -294,6 +294,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             $originalText = $this->_getPostData('original_text');
             $category = $this->_getPostData('category');
             $brand = $this->_getPostData('brand');
+            $promptId = $this->_getPostData('prompt_id'); // Optional: Prompt aus Bibliothek
 
             // Erstelle Backup vor dem Überschreiben
             if (!empty($productId)) {
@@ -327,6 +328,12 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             }
 
             $service = new OpenAIService($apiKey, $model, $projectId);
+
+            // Wenn eine Prompt-ID übergeben wurde, verwende diesen Prompt
+            if (!empty($promptId)) {
+                $service->usePromptFromLibrary($promptId);
+            }
+
             $languages = $this->_getActiveLanguages();
             $results = array();
 
@@ -543,6 +550,236 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             } else {
                 throw new Exception('Backup konnte nicht wiederhergestellt werden');
             }
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    // ============================================================
+    // Prompt Library Actions
+    // ============================================================
+
+    /**
+     * Gibt alle Prompts aus der Bibliothek zurück
+     */
+    public function actionGetPrompts()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $activeOnly = $this->_getQueryParameter('active_only') !== '0';
+            $prompts = PromptLibraryService::getAllPrompts($activeOnly);
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'prompts' => $prompts
+            ]);
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Gibt einen spezifischen Prompt zurück
+     */
+    public function actionGetPrompt()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $promptId = $this->_getQueryParameter('prompt_id');
+
+            if (empty($promptId)) {
+                throw new Exception('Prompt-ID fehlt');
+            }
+
+            $prompt = PromptLibraryService::getPromptById($promptId);
+
+            if (!$prompt) {
+                throw new Exception('Prompt nicht gefunden');
+            }
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'prompt' => $prompt
+            ]);
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Erstellt einen neuen Prompt
+     */
+    public function actionCreatePrompt()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $label = $this->_getPostData('label');
+            $systemPrompt = $this->_getPostData('system_prompt');
+            $userPrompt = $this->_getPostData('user_prompt');
+            $description = $this->_getPostData('description');
+            $isDefault = $this->_getPostData('is_default') == '1';
+
+            if (empty($label) || empty($systemPrompt) || empty($userPrompt)) {
+                throw new Exception('Label, System Prompt und User Prompt sind erforderlich');
+            }
+
+            $promptId = PromptLibraryService::createPrompt($label, $systemPrompt, $userPrompt, $description, $isDefault);
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'prompt_id' => $promptId,
+                'message' => 'Prompt erfolgreich erstellt'
+            ]);
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Aktualisiert einen existierenden Prompt
+     */
+    public function actionUpdatePrompt()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $promptId = $this->_getPostData('prompt_id');
+            $label = $this->_getPostData('label');
+            $systemPrompt = $this->_getPostData('system_prompt');
+            $userPrompt = $this->_getPostData('user_prompt');
+            $description = $this->_getPostData('description');
+            $isDefault = $this->_getPostData('is_default') == '1';
+            $isActive = $this->_getPostData('is_active') !== '0';
+
+            if (empty($promptId) || empty($label) || empty($systemPrompt) || empty($userPrompt)) {
+                throw new Exception('Prompt-ID, Label, System Prompt und User Prompt sind erforderlich');
+            }
+
+            $success = PromptLibraryService::updatePrompt($promptId, $label, $systemPrompt, $userPrompt, $description, $isDefault, $isActive);
+
+            if (!$success) {
+                throw new Exception('Prompt konnte nicht aktualisiert werden');
+            }
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'message' => 'Prompt erfolgreich aktualisiert'
+            ]);
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Löscht einen Prompt
+     */
+    public function actionDeletePrompt()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $promptId = $this->_getPostData('prompt_id');
+
+            if (empty($promptId)) {
+                throw new Exception('Prompt-ID fehlt');
+            }
+
+            $success = PromptLibraryService::deletePrompt($promptId);
+
+            if (!$success) {
+                throw new Exception('Prompt konnte nicht gelöscht werden');
+            }
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'message' => 'Prompt erfolgreich gelöscht'
+            ]);
+
+        } catch (Exception $e) {
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Setzt einen Prompt als Standard
+     */
+    public function actionSetDefaultPrompt()
+    {
+        ob_start();
+
+        try {
+            ob_clean();
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+
+            $promptId = $this->_getPostData('prompt_id');
+
+            if (empty($promptId)) {
+                throw new Exception('Prompt-ID fehlt');
+            }
+
+            $success = PromptLibraryService::setAsDefault($promptId);
+
+            if (!$success) {
+                throw new Exception('Standard-Prompt konnte nicht gesetzt werden');
+            }
+
+            ob_clean();
+            $this->_jsonResponse([
+                'success' => true,
+                'message' => 'Standard-Prompt erfolgreich gesetzt'
+            ]);
 
         } catch (Exception $e) {
             ob_clean();
