@@ -254,6 +254,36 @@
         </div>
     </div>
 
+    <!-- Modal für Produkttext Prompt-Bibliothek -->
+    <div id="product-library-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;" onclick="if(event.target.id==='product-library-modal') hideProductLibrary();">
+        <div style="background: white; max-width: 1000px; margin: 30px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="border-left: 4px solid #007bff; padding-left: 15px;">📚 Prompt-Bibliothek für Produkttexte</h3>
+            <p>Verwalten Sie Ihre gespeicherten Prompt-Vorlagen für die Produkttext-Generierung.</p>
+
+            <div style="margin-bottom: 20px;">
+                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">➕ Neuen Prompt erstellen</button>
+                <button type="button" class="btn btn-secondary" style="float: right;" onclick="hideProductLibrary()">✕ Schließen</button>
+            </div>
+
+            <div id="product-library-list"></div>
+        </div>
+    </div>
+
+    <!-- Modal für Vision/ALT-Text Prompt-Bibliothek -->
+    <div id="vision-library-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;" onclick="if(event.target.id==='vision-library-modal') hideVisionLibrary();">
+        <div style="background: white; max-width: 1000px; margin: 30px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+            <h3 style="border-left: 4px solid #17a2b8; padding-left: 15px;">📚 Prompt-Bibliothek für ALT-Texte</h3>
+            <p>Verwalten Sie Ihre gespeicherten Prompt-Vorlagen für die barrierefreie ALT-Text-Generierung.</p>
+
+            <div style="margin-bottom: 20px;">
+                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">➕ Neuen Prompt erstellen</button>
+                <button type="button" class="btn btn-secondary" style="float: right;" onclick="hideVisionLibrary()">✕ Schließen</button>
+            </div>
+
+            <div id="vision-library-list"></div>
+        </div>
+    </div>
+
     <hr style="margin-top: 40px;">
     <h3>📝 Verwendung</h3>
     <ol>
@@ -490,7 +520,12 @@ function saveNewPrompt() {
             statusEl.style.color = '#28a745';
             setTimeout(() => {
                 hideAddPromptDialog();
-                loadPromptLibrary();
+                // Reload the appropriate library modal if it's open
+                if (document.getElementById('product-library-modal').style.display === 'block') {
+                    loadPromptLibraryInto('product', 'product-library-list');
+                } else if (document.getElementById('vision-library-modal').style.display === 'block') {
+                    loadPromptLibraryInto('vision', 'vision-library-list');
+                }
             }, 1500);
         } else {
             statusEl.innerHTML = '❌ Fehler: ' + data.error;
@@ -589,7 +624,12 @@ function saveEditedPrompt() {
             statusEl.style.color = '#28a745';
             setTimeout(() => {
                 hideEditPromptDialog();
-                loadPromptLibrary();
+                // Reload the appropriate library modal if it's open
+                if (document.getElementById('product-library-modal').style.display === 'block') {
+                    loadPromptLibraryInto('product', 'product-library-list');
+                } else if (document.getElementById('vision-library-modal').style.display === 'block') {
+                    loadPromptLibraryInto('vision', 'vision-library-list');
+                }
             }, 1500);
         } else {
             statusEl.innerHTML = '❌ Fehler: ' + data.error;
@@ -670,19 +710,141 @@ function escapeHtml(text) {
 // ============================================================
 
 function showProductPromptLibrary() {
-    alert('Produkttext Prompt-Bibliothek wird in Kürze implementiert.\n\nFür jetzt: Scrollen Sie nach unten zur Prompt-Bibliothek am Seitenende.');
-    // TODO: Implementieren Sie Modal mit loadPromptLibrary('product')
+    document.getElementById('product-library-modal').style.display = 'block';
+    loadPromptLibraryInto('product', 'product-library-list');
+}
+
+function hideProductLibrary() {
+    document.getElementById('product-library-modal').style.display = 'none';
 }
 
 function showVisionPromptLibrary() {
-    alert('Vision/ALT-Text Prompt-Bibliothek wird in Kürze implementiert.\n\nAktuell können Sie beide Bibliotheken am Seitenende verwalten.');
-    // TODO: Implementieren Sie Modal mit loadPromptLibrary('vision')
+    document.getElementById('vision-library-modal').style.display = 'block';
+    loadPromptLibraryInto('vision', 'vision-library-list');
 }
 
-// Lade Prompt-Bibliothek beim Laden der Seite
-document.addEventListener('DOMContentLoaded', function() {
-    // loadPromptLibrary(); // Deaktiviert für jetzt
-});
+function hideVisionLibrary() {
+    document.getElementById('vision-library-modal').style.display = 'none';
+}
+
+function loadPromptLibraryInto(promptType, targetElementId) {
+    var listEl = document.getElementById(targetElementId);
+    listEl.innerHTML = '<p style="color: #666;">⏳ Lade Prompts...</p>';
+
+    var url = 'admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1';
+    if (promptType) {
+        url += '&prompt_type=' + promptType;
+    }
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayPromptLibraryInto(data.prompts, promptType, targetElementId);
+        } else {
+            listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + data.error + '</p>';
+        }
+    })
+    .catch(error => {
+        listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + error.message + '</p>';
+    });
+}
+
+function displayPromptLibraryInto(prompts, promptType, targetElementId) {
+    var listEl = document.getElementById(targetElementId);
+
+    if (!prompts || prompts.length === 0) {
+        var typeLabel = promptType === 'vision' ? 'ALT-Text' : 'Produkttext';
+        listEl.innerHTML = '<div style="padding: 20px; background: #f8f9fa; border-radius: 4px; text-align: center;">' +
+            '<p style="color: #666; margin: 0;">Noch keine ' + typeLabel + '-Prompts gespeichert.</p>' +
+            '<p style="color: #999; margin: 10px 0 0 0; font-size: 0.9em;">Klicken Sie auf "➕ Neuen Prompt erstellen" um einen Prompt zu speichern.</p>' +
+            '</div>';
+        return;
+    }
+
+    var html = '<table class="table table-striped" style="margin-top: 20px;">';
+    html += '<thead><tr>';
+    html += '<th>Label</th>';
+    html += '<th>Beschreibung</th>';
+    html += '<th>Erstellt</th>';
+    html += '<th>Standard</th>';
+    html += '<th>Verwendet</th>';
+    html += '<th>Aktionen</th>';
+    html += '</tr></thead><tbody>';
+
+    prompts.forEach(function(prompt) {
+        html += '<tr' + (prompt.is_default ? ' style="background-color: #e7f3ff;"' : '') + '>';
+        html += '<td><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
+        html += '<td>' + (prompt.prompt_description ? escapeHtml(prompt.prompt_description) : '<em style="color: #999;">-</em>') + '</td>';
+        html += '<td>' + prompt.created_at + '</td>';
+        html += '<td>' + (prompt.is_default ? '⭐ Ja' : '-') + '</td>';
+        html += '<td>' + prompt.usage_count + 'x</td>';
+        html += '<td>';
+        html += '<button class="btn btn-sm btn-info" onclick="loadPromptToForm(' + prompt.prompt_id + ', \'' + promptType + '\')">📋 Laden</button> ';
+        html += '<button class="btn btn-sm btn-primary" onclick="editPrompt(' + prompt.prompt_id + ')">✏️</button> ';
+        html += '<button class="btn btn-sm btn-danger" onclick="deletePromptAndReload(' + prompt.prompt_id + ', \'' + promptType + '\', \'' + targetElementId + '\')">🗑️</button>';
+        html += '</td>';
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    listEl.innerHTML = html;
+}
+
+function loadPromptToForm(promptId, promptType) {
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=0')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var prompt = data.prompts.find(p => p.prompt_id == promptId);
+            if (prompt) {
+                if (promptType === 'vision') {
+                    document.querySelector('textarea[name="vision_system_prompt"]').value = prompt.system_prompt;
+                    document.querySelector('textarea[name="vision_user_prompt"]').value = prompt.user_prompt;
+                    hideVisionLibrary();
+                    alert('✓ Vision-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
+                } else {
+                    document.querySelector('textarea[name="system_prompt"]').value = prompt.system_prompt;
+                    document.querySelector('textarea[name="user_prompt"]').value = prompt.user_prompt;
+                    hideProductLibrary();
+                    alert('✓ Produkttext-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
+                }
+            }
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler beim Laden: ' + error.message);
+    });
+}
+
+function deletePromptAndReload(promptId, promptType, targetElementId) {
+    if (!confirm('Möchten Sie diesen Prompt wirklich löschen?')) {
+        return;
+    }
+
+    var params = new URLSearchParams();
+    params.append('prompt_id', promptId);
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/DeletePrompt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the specific library
+            loadPromptLibraryInto(promptType, targetElementId);
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler: ' + error.message);
+    });
+}
 </script>
 </body>
 </html>
