@@ -52,15 +52,31 @@ if ($row = xtc_db_fetch_array($result)) {
 
 if (empty($currentPrompt)) {
     echo "✓ Kein benutzerdefinierter Prompt gespeichert.\n";
-    echo "✓ System verwendet bereits den Default-Prompt mit product_name Support.\n";
-    echo "\n<strong>Keine Aktion erforderlich!</strong>\n";
+    echo "✓ System verwendet bereits den aktuellen Default-Prompt.\n\n";
+    echo "<strong>Default-Prompt Features:</strong>\n";
+    echo "  ✓ Produktname-Übersetzung mit Beispielen\n";
+    echo "  ✓ HTML-Formatierung (h2, p, ul, li, strong, em)\n";
+    echo "  ✓ Zwischenüberschriften-Struktur (2-3 pro Text)\n";
+    echo "  ✓ Keyword-Hervorhebung (5-7 wichtige Begriffe)\n";
+    echo "  ✓ Media-Tag Preservation\n\n";
+    echo "<strong>Keine Aktion erforderlich!</strong>\n";
 } else {
-    // Prüfe ob product_name bereits vorhanden
-    if (strpos($currentPrompt, '"product_name"') !== false) {
-        echo "✓ Prompt enthält bereits 'product_name' Feld.\n";
-        echo "\n<strong>Keine Aktion erforderlich!</strong>\n";
+    // Prüfe ob neuer Prompt (mit HTML-Formatierungs-Anweisungen)
+    $hasNewFormatting = (strpos($currentPrompt, 'HTML-FORMATIERUNG') !== false ||
+                         strpos($currentPrompt, 'KEYWORD-HERVORHEBUNG') !== false);
+
+    if ($hasNewFormatting) {
+        echo "✓ Prompt ist bereits aktuell.\n";
+        echo "✓ Enthält HTML-Formatierungs- und Keyword-Hervorhebungs-Anweisungen.\n\n";
+        echo "<strong>Keine Aktion erforderlich!</strong>\n";
     } else {
-        echo "⚠ Alter Prompt gefunden (ohne product_name Support).\n\n";
+        echo "⚠ Veralteter Prompt gefunden.\n\n";
+        echo "<strong>NEUER PROMPT BIETET:</strong>\n";
+        echo "  ✓ Verbesserte Produktname-Übersetzung mit konkreten Beispielen\n";
+        echo "  ✓ Pflicht-HTML-Formatierung (h2, p, ul, li, strong, em)\n";
+        echo "  ✓ Strukturvorgaben für Zwischenüberschriften (2-3 pro Text)\n";
+        echo "  ✓ Keyword-Hervorhebung (5-7 wichtige Begriffe mit <strong>)\n";
+        echo "  ✓ Qualitätskriterien-Checkliste\n\n";
         echo "Führe Update durch...\n\n";
 
         // Reset: Leeren damit Default verwendet wird
@@ -68,8 +84,13 @@ if (empty($currentPrompt)) {
         xtc_db_query($query);
 
         echo "✓ Prompt zurückgesetzt.\n";
-        echo "✓ System verwendet jetzt den Default-Prompt mit product_name Support.\n\n";
-        echo "<strong style='color: green;'>UPDATE ERFOLGREICH!</strong>\n";
+        echo "✓ System verwendet jetzt den verbesserten Default-Prompt.\n\n";
+        echo "<strong style='color: green;'>UPDATE ERFOLGREICH!</strong>\n\n";
+        echo "NÄCHSTE SCHRITTE:\n";
+        echo "  1. Testen Sie die Optimierung mit einem Produkt\n";
+        echo "  2. Achten Sie auf HTML-Formatierung im Output\n";
+        echo "  3. Prüfen Sie ob product_name übersetzt wird\n";
+        echo "  4. Keywords sollten mit <strong> hervorgehoben sein\n\n";
 
         // Markiere als ausgeführt
         file_put_contents($executed_file, date('Y-m-d H:i:s'));

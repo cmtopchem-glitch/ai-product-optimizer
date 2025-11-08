@@ -59,7 +59,7 @@ class OpenAIService
     
 
 /**
- * Standard User-Prompt - OPTIMIERT FÜR KEYWORDS
+ * Standard User-Prompt - OPTIMIERT FÜR KEYWORDS & HTML-FORMATIERUNG
  */
 private function getDefaultUserPrompt()
 {
@@ -70,47 +70,75 @@ private function getDefaultUserPrompt()
            "\nORIGINAL-TEXT:\n{ORIGINAL_TEXT}\n\n" .
            "AUFGABE:\n" .
            "Erstelle SEO-optimierten Content in {LANGUAGE} mit folgenden Elementen:\n\n" .
-           "1. PRODUKTNAME (in Zielsprache)\n" .
-           "   - Übersetze den Produktnamen in die Zielsprache {LANGUAGE}\n" .
-           "   - Behalte Markennamen und Artikelnummern bei\n" .
-           "   - Falls keine Übersetzung nötig, verwende den Originalnamen\n\n" .
-           "2. PRODUKTBESCHREIBUNG (300-500 Wörter)\n" .
-           "   - Verkaufsstarker Text mit klarer Struktur\n" .
-           "   - Vorteile und Nutzen hervorheben\n" .
-           "   - Keywords natürlich integrieren\n" .
-           "   - WICHTIG: Platzhalter im Format [[MEDIA_TAG_X]] MÜSSEN UNVERÄNDERT übernommen werden!\n" .
-           "   - Setze diese Platzhalter an geeignete Stellen in der Beschreibung\n\n" .
+           "1. PRODUKTNAME (ZWINGEND in Zielsprache übersetzen!)\n" .
+           "   - Der Produktname MUSS IMMER in die Zielsprache {LANGUAGE} übersetzt werden!\n" .
+           "   - Behalte nur Markennamen (z.B. 'Bosch', 'Tornador') und Artikelnummern bei\n" .
+           "   - Übersetze beschreibende Teile des Produktnamens vollständig\n" .
+           "   - Beispiele:\n" .
+           "     * 'Foam Gun Tornador' → 'Schaumkanone Tornador' (Deutsch)\n" .
+           "     * 'High Pressure Cleaner PRO-2000' → 'Hochdruckreiniger PRO-2000' (Deutsch)\n" .
+           "     * 'Car Wash Kit' → 'Autowasch-Set' (Deutsch)\n\n" .
+           "2. PRODUKTBESCHREIBUNG (300-500 Wörter) - MIT HTML-FORMATIERUNG\n" .
+           "   STRUKTUR (PFLICHT):\n" .
+           "   - Einleitungsabsatz mit Produktvorstellung (<p>)\n" .
+           "   - Zwischenüberschrift 1: z.B. 'Eigenschaften und Vorteile' (<h2>)\n" .
+           "   - Aufzählungsliste mit Produktmerkmalen (<ul><li>)\n" .
+           "   - Zwischenüberschrift 2: z.B. 'Anwendungsbereiche' oder 'Lieferumfang' (<h2>)\n" .
+           "   - Weitere Details in Absätzen (<p>)\n" .
+           "   - Abschließender Call-to-Action Absatz (<p>)\n\n" .
+           "   FORMATIERUNG (PFLICHT):\n" .
+           "   - ALLE Absätze MÜSSEN in <p>-Tags stehen\n" .
+           "   - Verwende <h2> für Zwischenüberschriften (2-3 pro Beschreibung)\n" .
+           "   - Nutze <ul> und <li> für Listen\n" .
+           "   - Hebe wichtige Keywords und Produktmerkmale mit <strong> hervor\n" .
+           "   - Verwende <em> für sekundäre Betonungen\n" .
+           "   - NIEMALS Überschriften in <p>-Tags!\n\n" .
+           "   KEYWORD-HERVORHEBUNG (PFLICHT):\n" .
+           "   - Produktname beim ersten Vorkommen: <strong>\n" .
+           "   - Wichtigste 5-7 Keywords: <strong>\n" .
+           "   - Technische Spezifikationen: <strong>\n" .
+           "   - USPs und Alleinstellungsmerkmale: <strong>\n\n" .
+           "   MEDIA-TAGS:\n" .
+           "   - WICHTIG: Platzhalter [[MEDIA_TAG_X]] MÜSSEN EXAKT so übernommen werden!\n" .
+           "   - Setze diese Platzhalter an passende Stellen (nach Absätzen oder Listen)\n" .
+           "   - Integriere sie sinnvoll in den Textfluss\n\n" .
            "3. META TITLE (max. 60 Zeichen)\n" .
            "   - Prägnant und klickstark\n" .
-           "   - Hauptkeyword am Anfang\n\n" .
+           "   - Hauptkeyword am Anfang\n" .
+           "   - In Zielsprache {LANGUAGE}\n\n" .
            "4. META DESCRIPTION (max. 160 Zeichen)\n" .
            "   - Call-to-Action enthalten\n" .
-           "   - Wichtigste USPs nennen\n\n" .
+           "   - Wichtigste USPs nennen\n" .
+           "   - In Zielsprache {LANGUAGE}\n\n" .
            "5. META KEYWORDS (10-15 Begriffe, Komma-separiert)\n" .
            "   - Hauptkeyword: Produktname bzw. Produkttyp\n" .
            "   - Verwandte Begriffe: Synonyme, Kategorien\n" .
            "   - Long-Tail Keywords: 2-3 Wort-Kombinationen\n" .
            "   - Marken-Keywords falls relevant\n" .
            "   - Technische Begriffe aus der Beschreibung\n" .
+           "   - In Zielsprache {LANGUAGE}\n" .
            "   Beispiel: \"Schaumkanone, Foam Gun, Tornador, Autoreinigung, Hochdruckreiniger, Druckluft Schaumpistole, Fahrzeugpflege, Schaumreiniger, Auto Waschen, Detailing Equipment\"\n\n" .
            "6. SHOP SUCHWORTE (8-12 Begriffe, Komma-separiert)\n" .
            "   - Suchbegriffe die Kunden tatsächlich eingeben würden\n" .
            "   - Umgangssprache und Synonyme\n" .
            "   - Häufige Tippfehler und Varianten\n" .
-           "   - Kombinationen mit \"kaufen\", \"günstig\", etc.\n" .
+           "   - Kombinationen mit 'kaufen', 'günstig', etc.\n" .
+           "   - In Zielsprache {LANGUAGE}\n" .
            "   Beispiel: \"schaum pistole, foam lance auto, druckluft schaum, reinigungsschaum auto, schaum gerät waschen, tornador alternative, auto schäumer, fahrzeug schaum reiniger\"\n\n" .
-           "WICHTIG:\n" .
-           "- product_name MUSS IMMER in die Zielsprache übersetzt werden!\n" .
-           "- Platzhalter [[MEDIA_TAG_X]] MÜSSEN EXAKT so in product_description übernommen werden!\n" .
-           "- meta_keywords und search_keywords MÜSSEN gefüllt sein!\n" .
-           "- Beide Felder MÜSSEN mindestens 5 Begriffe enthalten!\n" .
-           "- Keywords aus dem ORIGINAL-TEXT extrahieren und erweitern!\n\n" .
+           "WICHTIG - QUALITÄTSKRITERIEN:\n" .
+           "✓ product_name MUSS VOLLSTÄNDIG in {LANGUAGE} übersetzt sein (nur Marken/Nummern behalten!)\n" .
+           "✓ product_description MUSS valides HTML mit <p>, <h2>, <ul>, <li>, <strong>, <em> enthalten\n" .
+           "✓ Mindestens 2-3 <h2> Zwischenüberschriften in der Beschreibung\n" .
+           "✓ Mindestens 5-7 <strong> Hervorhebungen für Keywords\n" .
+           "✓ Platzhalter [[MEDIA_TAG_X]] EXAKT übernehmen\n" .
+           "✓ meta_keywords und search_keywords mit mindestens 8 Begriffen gefüllt\n" .
+           "✓ Alle Texte in Zielsprache {LANGUAGE}\n\n" .
            "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
-           '  "product_name": "Übersetzter Produktname in Zielsprache {LANGUAGE}",'."\n" .
-           '  "product_description": "Optimierter HTML-Text mit <p>, <h2>, <ul>, <strong> UND [[MEDIA_TAG_X]] Platzhaltern",'."\n" .
-           '  "meta_title": "SEO Meta-Titel (max 60 Zeichen)",'."\n" .
-           '  "meta_description": "Meta-Description (max 160 Zeichen)",'."\n" .
+           '  "product_name": "VOLLSTÄNDIG ÜBERSETZTER Produktname in {LANGUAGE} (NUR Marken/Nummern beibehalten)",'."\n" .
+           '  "product_description": "<p>Einleitung mit <strong>Keywords</strong>...</p><h2>Zwischenüberschrift</h2><ul><li>Merkmal 1</li><li>Merkmal 2</li></ul>[[MEDIA_TAG_0]]<h2>Weitere Überschrift</h2><p>Text mit <strong>Hervorhebungen</strong>...</p>",'."\n" .
+           '  "meta_title": "SEO Meta-Titel in {LANGUAGE} (max 60 Zeichen)",'."\n" .
+           '  "meta_description": "Meta-Description in {LANGUAGE} (max 160 Zeichen)",'."\n" .
            '  "meta_keywords": "keyword1, keyword2, keyword3, keyword4, keyword5, keyword6, keyword7, keyword8, keyword9, keyword10",'."\n" .
            '  "search_keywords": "suchwort1, synonym1, suchwort2, variante1, suchwort3, kombination1, suchwort4, suchwort5"'."\n" .
            "}\n\n" .
