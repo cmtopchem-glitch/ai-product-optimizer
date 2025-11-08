@@ -719,10 +719,16 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
+        // Setze Content-Type Header VOR jeder Ausgabe
+        header('Content-Type: application/json; charset=utf-8');
+
+        // Lösche alle vorherigen Outputs
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
         ob_start();
 
         try {
-            ob_clean();
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
 
             $promptId = $this->_getPostData('prompt_id');
@@ -737,18 +743,22 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 throw new Exception('Prompt konnte nicht gelöscht werden');
             }
 
-            ob_clean();
-            $this->_jsonResponse([
+            // Lösche Buffer und gebe JSON aus
+            ob_end_clean();
+            echo json_encode([
                 'success' => true,
                 'message' => 'Prompt erfolgreich gelöscht'
             ]);
+            exit;
 
         } catch (Exception $e) {
-            ob_clean();
-            $this->_jsonResponse([
+            // Lösche Buffer und gebe Fehler-JSON aus
+            ob_end_clean();
+            echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]);
+            exit;
         }
     }
 
