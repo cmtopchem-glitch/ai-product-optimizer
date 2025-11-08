@@ -116,12 +116,12 @@
             <p class="help-block" id="update-status"></p>
         </div>
         
-        <h2 class="section-title">📝 Prompt-Konfiguration</h2>
-        
+        <h2 class="section-title">📝 Prompt-Konfiguration (Produkttexte)</h2>
+
         <div class="form-group">
             <label>System-Prompt</label>
             <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
-            <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI</p>
+            <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI für Produkttext-Generierung</p>
             <button type="button" class="btn btn-info btn-sm" onclick="resetSystemPrompt()">Standard wiederherstellen</button>
         </div>
         
@@ -139,7 +139,37 @@
             </div>
             <button type="button" class="btn btn-info btn-sm" onclick="resetUserPrompt()">Standard wiederherstellen</button>
         </div>
-        
+
+        <h2 class="section-title">🖼️ ALT-Text-Generierung (Barrierefreiheit)</h2>
+
+        <div class="form-group">
+            <label>Vision-Modell</label>
+            <select class="form-control" name="vision_model" id="vision-model-select">
+                <option value="gpt-4o" {if $visionModel == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität, empfohlen)</option>
+                <option value="gpt-4o-mini" {if $visionModel == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (schneller, günstiger)</option>
+            </select>
+            <p class="help-block">Modell für die Bild-Analyse und ALT-Text-Generierung</p>
+        </div>
+
+        <div class="form-group">
+            <label>System-Prompt für ALT-Texte</label>
+            <textarea class="form-control" name="vision_system_prompt" rows="4">{$visionSystemPrompt|escape}</textarea>
+            <p class="help-block">Definiert die Rolle für barrierefreie Bildbeschreibungen</p>
+            <button type="button" class="btn btn-info btn-sm" onclick="resetVisionSystemPrompt()">Standard wiederherstellen</button>
+        </div>
+
+        <div class="form-group">
+            <label>User-Prompt für ALT-Texte</label>
+            <textarea class="form-control" name="vision_user_prompt" rows="15">{$visionUserPrompt|escape}</textarea>
+            <p class="help-block">Template für die ALT-Text-Generierung. Platzhalter werden automatisch ersetzt.</p>
+            <div class="placeholder-info">
+                <strong>Verfügbare Platzhalter:</strong><br>
+                <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                <code>{literal}{ldelim}LANGUAGES{rdelim}{/literal}</code> - Liste der gewünschten Sprachen
+            </div>
+            <button type="button" class="btn btn-info btn-sm" onclick="resetVisionUserPrompt()">Standard wiederherstellen</button>
+        </div>
+
         <button type="submit" class="btn btn-primary">💾 Speichern</button>
         <a href="admin.php?do=ModuleCenter" class="btn">← Zurück</a>
     </form>
@@ -273,6 +303,41 @@ function resetSystemPrompt() {
 function resetUserPrompt() {
     if (confirm('User-Prompt auf Standard zurücksetzen?')) {
         document.querySelector('textarea[name="user_prompt"]').value = defaultUserPrompt;
+    }
+}
+
+var defaultVisionSystemPrompt = 'Du bist ein Experte für barrierefreie Bildbeschreibungen. Du erstellst präzise, informative ALT-Texte für Produktbilder, die für Screenreader-Nutzer optimal geeignet sind.';
+
+var defaultVisionUserPrompt = `Analysiere dieses Produktbild und erstelle barrierefreie ALT-Texte.
+
+Produkt: {ldelim}PRODUCT_NAME{rdelim}
+
+WICHTIG für barrierefreie ALT-Texte:
+- Beschreibe WAS auf dem Bild zu sehen ist (nicht WIE es aussieht)
+- Fokussiere auf das Produkt und seine erkennbaren Eigenschaften
+- Halte die Beschreibung präzise aber informativ (ca. 50-100 Zeichen)
+- Vermeide subjektive Bewertungen wie "schön" oder "hochwertig"
+- Beschreibe erkennbare Details: Farbe, Form, Material, Anzahl
+
+Erstelle ALT-Texte für folgende Sprachen:
+{ldelim}LANGUAGES{rdelim}
+
+Antworte NUR mit einem JSON-Objekt in diesem Format:
+{
+  "de": "ALT-Text in Deutsch",
+  "en": "ALT-text in English",
+  ...
+}`;
+
+function resetVisionSystemPrompt() {
+    if (confirm('Vision System-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="vision_system_prompt"]').value = defaultVisionSystemPrompt;
+    }
+}
+
+function resetVisionUserPrompt() {
+    if (confirm('Vision User-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="vision_user_prompt"]').value = defaultVisionUserPrompt;
     }
 }
 
