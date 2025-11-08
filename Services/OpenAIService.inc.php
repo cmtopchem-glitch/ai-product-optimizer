@@ -70,38 +70,45 @@ private function getDefaultUserPrompt()
            "\nORIGINAL-TEXT:\n{ORIGINAL_TEXT}\n\n" .
            "AUFGABE:\n" .
            "Erstelle SEO-optimierten Content in {LANGUAGE} mit folgenden Elementen:\n\n" .
-           "1. PRODUKTBESCHREIBUNG (300-500 Wörter)\n" .
+           "1. PRODUKTNAME (in Zielsprache)\n" .
+           "   - Übersetze den Produktnamen in die Zielsprache {LANGUAGE}\n" .
+           "   - Behalte Markennamen und Artikelnummern bei\n" .
+           "   - Falls keine Übersetzung nötig, verwende den Originalnamen\n\n" .
+           "2. PRODUKTBESCHREIBUNG (300-500 Wörter)\n" .
            "   - Verkaufsstarker Text mit klarer Struktur\n" .
            "   - Vorteile und Nutzen hervorheben\n" .
-           "   - Keywords natürlich integrieren\n\n" .
-           "2. META TITLE (max. 60 Zeichen)\n" .
+           "   - Keywords natürlich integrieren\n" .
+           "   - WICHTIG: Platzhalter im Format [[MEDIA_TAG_X]] MÜSSEN UNVERÄNDERT übernommen werden!\n" .
+           "   - Setze diese Platzhalter an geeignete Stellen in der Beschreibung\n\n" .
+           "3. META TITLE (max. 60 Zeichen)\n" .
            "   - Prägnant und klickstark\n" .
            "   - Hauptkeyword am Anfang\n\n" .
-           "3. META DESCRIPTION (max. 160 Zeichen)\n" .
+           "4. META DESCRIPTION (max. 160 Zeichen)\n" .
            "   - Call-to-Action enthalten\n" .
            "   - Wichtigste USPs nennen\n\n" .
-           "4. META KEYWORDS (10-15 Begriffe, Komma-separiert)\n" .
+           "5. META KEYWORDS (10-15 Begriffe, Komma-separiert)\n" .
            "   - Hauptkeyword: Produktname bzw. Produkttyp\n" .
            "   - Verwandte Begriffe: Synonyme, Kategorien\n" .
            "   - Long-Tail Keywords: 2-3 Wort-Kombinationen\n" .
            "   - Marken-Keywords falls relevant\n" .
            "   - Technische Begriffe aus der Beschreibung\n" .
            "   Beispiel: \"Schaumkanone, Foam Gun, Tornador, Autoreinigung, Hochdruckreiniger, Druckluft Schaumpistole, Fahrzeugpflege, Schaumreiniger, Auto Waschen, Detailing Equipment\"\n\n" .
-           "5. SHOP SUCHWORTE (8-12 Begriffe, Komma-separiert)\n" .
+           "6. SHOP SUCHWORTE (8-12 Begriffe, Komma-separiert)\n" .
            "   - Suchbegriffe die Kunden tatsächlich eingeben würden\n" .
            "   - Umgangssprache und Synonyme\n" .
            "   - Häufige Tippfehler und Varianten\n" .
            "   - Kombinationen mit \"kaufen\", \"günstig\", etc.\n" .
            "   Beispiel: \"schaum pistole, foam lance auto, druckluft schaum, reinigungsschaum auto, schaum gerät waschen, tornador alternative, auto schäumer, fahrzeug schaum reiniger\"\n\n" .
            "WICHTIG:\n" .
+           "- product_name MUSS IMMER in die Zielsprache übersetzt werden!\n" .
+           "- Platzhalter [[MEDIA_TAG_X]] MÜSSEN EXAKT so in product_description übernommen werden!\n" .
            "- meta_keywords und search_keywords MÜSSEN gefüllt sein!\n" .
            "- Beide Felder MÜSSEN mindestens 5 Begriffe enthalten!\n" .
-           "- Keywords aus dem ORIGINAL-TEXT extrahieren und erweitern!\n" .
-           "- Produktname MUSS in die Zielsprache übersetzt werden!\n\n" .
+           "- Keywords aus dem ORIGINAL-TEXT extrahieren und erweitern!\n\n" .
            "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
-           '  "product_name": "Übersetzter Produktname in Zielsprache",'."\n" .
-           '  "product_description": "Optimierter HTML-Text mit <p>, <h2>, <ul>, <strong>",'."\n" .
+           '  "product_name": "Übersetzter Produktname in Zielsprache {LANGUAGE}",'."\n" .
+           '  "product_description": "Optimierter HTML-Text mit <p>, <h2>, <ul>, <strong> UND [[MEDIA_TAG_X]] Platzhaltern",'."\n" .
            '  "meta_title": "SEO Meta-Titel (max 60 Zeichen)",'."\n" .
            '  "meta_description": "Meta-Description (max 160 Zeichen)",'."\n" .
            '  "meta_keywords": "keyword1, keyword2, keyword3, keyword4, keyword5, keyword6, keyword7, keyword8, keyword9, keyword10",'."\n" .
@@ -117,11 +124,22 @@ private function getDefaultUserPrompt()
     {
         // Hole Sprachname dynamisch aus DB
         $languageName = $this->getLanguageName($languageCode);
-        
-        $prompt = $this->buildPrompt($productName, $originalText, $languageName, $additionalData);
+
+        // SCHRITT 1: Extrahiere Media-Tags und ersetze sie mit Platzhaltern
+        $mediaStorage = array();
+        $textWithPlaceholders = $this->extractMediaTags($originalText, $mediaStorage);
+
+        // SCHRITT 2: Generiere optimierten Content (ohne Media-Tags)
+        $prompt = $this->buildPrompt($productName, $textWithPlaceholders, $languageName, $additionalData);
         $response = $this->callOpenAI($prompt);
-        
-        return $this->parseResponse($response);
+
+        // SCHRITT 3: Parse Response
+        $result = $this->parseResponse($response);
+
+        // SCHRITT 4: Stelle Media-Tags in der Beschreibung wieder her
+        $result['description'] = $this->restoreMediaTags($result['description'], $mediaStorage);
+
+        return $result;
     }
     
     /**
@@ -169,6 +187,72 @@ private function getDefaultUserPrompt()
         return $prompt;
     }
     
+    /**
+     * Extrahiert Media-Tags (img, video, iframe) und ersetzt sie mit Platzhaltern
+     * @param string $text Original-Text mit Media-Tags
+     * @param array &$storage Referenz zum Array für die gespeicherten Tags
+     * @return string Text mit Platzhaltern statt Media-Tags
+     */
+    private function extractMediaTags($text, &$storage)
+    {
+        $storage = array();
+        $counter = 0;
+
+        // Extrahiere <img> Tags (auch selbstschließend)
+        $text = preg_replace_callback(
+            '/<img[^>]*>/i',
+            function($matches) use (&$storage, &$counter) {
+                $placeholder = '[[MEDIA_TAG_' . $counter . ']]';
+                $storage[$placeholder] = $matches[0];
+                $counter++;
+                return $placeholder;
+            },
+            $text
+        );
+
+        // Extrahiere <video>...</video> Tags
+        $text = preg_replace_callback(
+            '/<video[^>]*>.*?<\/video>/is',
+            function($matches) use (&$storage, &$counter) {
+                $placeholder = '[[MEDIA_TAG_' . $counter . ']]';
+                $storage[$placeholder] = $matches[0];
+                $counter++;
+                return $placeholder;
+            },
+            $text
+        );
+
+        // Extrahiere <iframe>...</iframe> Tags
+        $text = preg_replace_callback(
+            '/<iframe[^>]*>.*?<\/iframe>/is',
+            function($matches) use (&$storage, &$counter) {
+                $placeholder = '[[MEDIA_TAG_' . $counter . ']]';
+                $storage[$placeholder] = $matches[0];
+                $counter++;
+                return $placeholder;
+            },
+            $text
+        );
+
+        return $text;
+    }
+
+    /**
+     * Stellt Media-Tags aus den Platzhaltern wieder her
+     * @param string $text Text mit Platzhaltern
+     * @param array $storage Array mit gespeicherten Media-Tags
+     * @return string Text mit wiederhergestellten Media-Tags
+     */
+    private function restoreMediaTags($text, $storage)
+    {
+        // Ersetze alle Platzhalter wieder durch die Original-Tags
+        foreach ($storage as $placeholder => $mediaTag) {
+            $text = str_replace($placeholder, $mediaTag, $text);
+        }
+
+        return $text;
+    }
+
     /**
      * Ruft die OpenAI API auf
      */
