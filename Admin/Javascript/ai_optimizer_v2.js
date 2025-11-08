@@ -5,6 +5,11 @@
 var AIProductOptimizer = {
     init: function() {
         this.bindEvents();
+        // Füge ALT-Text-Buttons nach kurzer Verzögerung hinzu (DOM muss vollständig geladen sein)
+        var self = this;
+        setTimeout(function() {
+            self.addAltTextButtons();
+        }, 500);
     },
     
     bindEvents: function() {
@@ -463,6 +468,152 @@ var AIProductOptimizer = {
                 self.showError('Verbindungsfehler: ' + error);
             }
         });
+    },
+
+    // ============================================================
+    // ALT-Text Generator für Barrierefreiheit
+    // ============================================================
+
+    /**
+     * Fügt "ALT-Texte generieren" Buttons zu allen Produktbildern hinzu
+     */
+    addAltTextButtons: function() {
+        var self = this;
+
+        // Finde alle Produktbild-Container
+        $('.product-image-wrapper').each(function(index) {
+            var $wrapper = $(this);
+
+            // Prüfe ob Button bereits existiert
+            if ($wrapper.find('.ai-generate-alt-text-btn').length > 0) {
+                return; // Button existiert bereits
+            }
+
+            // Finde das Bild
+            var $img = $wrapper.find('.product-preview-image img');
+            if ($img.length === 0) {
+                return; // Kein Bild gefunden
+            }
+
+            var imageSrc = $img.attr('src');
+            if (!imageSrc) {
+                return; // Keine Bild-URL
+            }
+
+            // Finde den ersten ALT-Text Container
+            var $firstAltContainer = $wrapper.find('.product-image-data .control-group').filter(function() {
+                return $(this).find('label').text().trim() === 'Alternativtext';
+            }).first();
+
+            if ($firstAltContainer.length === 0) {
+                return; // Keine ALT-Text-Felder gefunden
+            }
+
+            // Erstelle Button
+            var $button = $('<button>', {
+                'type': 'button',
+                'class': 'btn btn-info btn-sm ai-generate-alt-text-btn',
+                'style': 'margin-bottom: 10px;',
+                'html': '<i class="fa fa-magic"></i> ALT-Texte mit KI generieren'
+            });
+
+            // Button-Click Handler
+            $button.on('click', function(e) {
+                e.preventDefault();
+                self.generateAltTextsForImage($wrapper, imageSrc);
+            });
+
+            // Füge Button vor dem ersten ALT-Text-Feld ein
+            $button.insertBefore($firstAltContainer);
+        });
+    },
+
+    /**
+     * Generiert ALT-Texte für ein spezifisches Bild
+     */
+    generateAltTextsForImage: function($wrapper, imageSrc) {
+        var self = this;
+
+        // Produktname holen
+        var productName = self.getProductName();
+
+        // Button disablen während der Generierung
+        var $button = $wrapper.find('.ai-generate-alt-text-btn');
+        var originalHtml = $button.html();
+        $button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Generiere ALT-Texte...');
+
+        // Konvertiere relativen Pfad in absolute URL
+        var baseUrl = window.location.origin;
+        var imageUrl = imageSrc;
+        if (!imageUrl.startsWith('http')) {
+            imageUrl = baseUrl + (imageSrc.startsWith('/') ? '' : '/') + imageSrc;
+        }
+
+        // AJAX Call zur API
+        $.ajax({
+            url: 'admin.php?do=AIProductOptimizerModuleCenterModule/GenerateAltTexts',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                image_url: imageUrl,
+                product_name: productName
+            },
+            success: function(response) {
+                console.log('ALT-Text API Response:', response);
+
+                if (response.success && response.alt_texts) {
+                    // Befülle die ALT-Text-Felder
+                    self.fillAltTextFields($wrapper, response.alt_texts);
+
+                    // Zeige Erfolg
+                    $button.html('<i class="fa fa-check"></i> ALT-Texte generiert!').removeClass('btn-info').addClass('btn-success');
+
+                    setTimeout(function() {
+                        $button.html(originalHtml).removeClass('btn-success').addClass('btn-info').prop('disabled', false);
+                    }, 3000);
+                } else {
+                    self.showError(response.error || 'Fehler beim Generieren der ALT-Texte');
+                    $button.html(originalHtml).prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('ALT-Text Generation Error:', xhr.responseText);
+                self.showError('Verbindungsfehler: ' + error);
+                $button.html(originalHtml).prop('disabled', false);
+            }
+        });
+    },
+
+    /**
+     * Befüllt die ALT-Text-Felder mit generierten Texten
+     */
+    fillAltTextFields: function($wrapper, altTexts) {
+        console.log('Filling ALT texts:', altTexts);
+
+        // Finde alle ALT-Text-Felder in diesem Wrapper
+        for (var langCode in altTexts) {
+            if (!altTexts.hasOwnProperty(langCode)) continue;
+
+            var altText = altTexts[langCode];
+            var langCodeUpper = langCode.toUpperCase();
+
+            // Finde das entsprechende Input-Feld
+            // Format: input[name="image_alt_text[DE][]"]
+            var $input = $wrapper.find('input[name="image_alt_text[' + langCodeUpper + '][]"]');
+
+            if ($input.length > 0) {
+                $input.val(altText);
+                // Visuelles Feedback
+                $input.css('background-color', '#d4edda').css('border-color', '#28a745');
+                setTimeout(function($el) {
+                    $el.css('background-color', '').css('border-color', '');
+                }, 2000, $input);
+
+                console.log('✓ ALT-Text befüllt für', langCodeUpper, ':', altText);
+            } else {
+                console.warn('✗ ALT-Text Feld nicht gefunden für', langCodeUpper);
+            }
+        }
     }
 };
 
