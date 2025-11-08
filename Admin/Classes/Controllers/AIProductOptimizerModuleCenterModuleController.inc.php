@@ -814,5 +814,97 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             ]);
         }
     }
+
+    /**
+     * Generiert barrierefreie ALT-Texte für ein Produktbild
+     */
+    public function actionGenerateAltTexts()
+    {
+        // Clean all output buffers to prevent HTML output
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Disable error display
+        $oldErrorReporting = error_reporting(E_ALL);
+        $oldDisplay = ini_get('display_errors');
+        ini_set('display_errors', '0');
+
+        // Set headers first
+        header('Content-Type: application/json');
+
+        try {
+            // Get parameters from POST
+            $imageUrl = isset($_POST['image_url']) ? $_POST['image_url'] : null;
+            $productName = isset($_POST['product_name']) ? $_POST['product_name'] : '';
+
+            if (empty($imageUrl)) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Bild-URL fehlt'
+                ]);
+                exit;
+            }
+
+            // Lade API Key und Project ID
+            $query = "SELECT gm_key, gm_value FROM gm_configuration WHERE gm_key IN ('OPENAI_API_KEY', 'OPENAI_PROJECT_ID')";
+            $result = xtc_db_query($query);
+            $apiKey = '';
+            $projectId = '';
+            while ($row = xtc_db_fetch_array($result)) {
+                if ($row['gm_key'] == 'OPENAI_API_KEY') {
+                    $apiKey = $row['gm_value'];
+                }
+                if ($row['gm_key'] == 'OPENAI_PROJECT_ID') {
+                    $projectId = $row['gm_value'];
+                }
+            }
+
+            if (empty($apiKey)) {
+                throw new Exception('OpenAI API Key nicht konfiguriert');
+            }
+
+            // Lade aktive Sprachen
+            $languages = [];
+            $query = "SELECT code FROM languages WHERE status = 1 ORDER BY languages_id";
+            $result = xtc_db_query($query);
+            while ($row = xtc_db_fetch_array($result)) {
+                $languages[] = strtolower($row['code']);
+            }
+
+            if (empty($languages)) {
+                throw new Exception('Keine aktiven Sprachen gefunden');
+            }
+
+            // Lade VisionService
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/VisionService.inc.php';
+
+            // Generiere ALT-Texte
+            $visionService = new VisionService($apiKey, $projectId);
+            $altTexts = $visionService->generateAltTexts($imageUrl, $productName, $languages);
+
+            echo json_encode([
+                'success' => true,
+                'alt_texts' => $altTexts
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        } catch (Error $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'PHP Error: ' . $e->getMessage()
+            ]);
+        }
+
+        // Restore error settings
+        error_reporting($oldErrorReporting);
+        ini_set('display_errors', $oldDisplay);
+
+        exit;
+    }
 }
 }
