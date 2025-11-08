@@ -719,43 +719,62 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
-        // Clear any existing output
-        while (ob_get_level() > 0) {
+        // Clean all output buffers to prevent HTML output
+        while (ob_get_level()) {
             ob_end_clean();
         }
-        ob_start();
+
+        // Disable error display and log instead
+        $oldErrorReporting = error_reporting(E_ALL);
+        $oldDisplay = ini_get('display_errors');
+        ini_set('display_errors', '0');
+
+        // Set headers first, before any output
+        header('Content-Type: application/json');
 
         try {
-            // Lade PromptLibraryService falls noch nicht geladen
+            // Get prompt_id from POST
+            $promptId = isset($_POST['prompt_id']) ? $_POST['prompt_id'] : null;
+
+            if (empty($promptId)) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Prompt-ID fehlt'
+                ]);
+                exit;
+            }
+
+            // Lade PromptLibraryService
             if (!class_exists('PromptLibraryService')) {
                 require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
             }
 
-            $promptId = $this->_getPostData('prompt_id');
+            // Lösche den Prompt direkt mit SQL (bypass Service um Fehlerquelle zu eliminieren)
+            $query = "DELETE FROM rz_ai_prompt_library WHERE prompt_id = '" . (int)$promptId . "'";
+            xtc_db_query($query);
 
-            if (empty($promptId)) {
-                throw new Exception('Prompt-ID fehlt');
-            }
-
-            // Lösche den Prompt
-            $success = PromptLibraryService::deletePrompt($promptId);
-
-            // Auch wenn keine Zeilen betroffen waren, ist es kein Fehler
-            // (Prompt könnte bereits gelöscht worden sein)
-
-            ob_end_clean();
-            $this->_jsonResponse([
+            echo json_encode([
                 'success' => true,
                 'message' => 'Prompt erfolgreich gelöscht'
             ]);
 
         } catch (Exception $e) {
-            ob_end_clean();
-            $this->_jsonResponse([
+            echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]);
+        } catch (Error $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'PHP Error: ' . $e->getMessage()
+            ]);
         }
+
+        // Restore error settings
+        error_reporting($oldErrorReporting);
+        ini_set('display_errors', $oldDisplay);
+
+        exit;
     }
 
     /**

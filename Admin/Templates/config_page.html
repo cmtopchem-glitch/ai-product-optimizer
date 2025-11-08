@@ -528,31 +528,18 @@ function deletePrompt(promptId) {
         return;
     }
 
-    var formData = new FormData();
-    formData.append('prompt_id', promptId);
+    // Use URLSearchParams instead of FormData for better Gambio compatibility
+    var params = new URLSearchParams();
+    params.append('prompt_id', promptId);
 
     fetch('admin.php?do=AIProductOptimizerModuleCenterModule/DeletePrompt', {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
     })
-    .then(response => {
-        // Prüfe ob Response OK ist
-        if (!response.ok) {
-            throw new Error('Server returned ' + response.status + ': ' + response.statusText);
-        }
-
-        // Prüfe Content-Type
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            // Nicht-JSON Response erhalten - zeige Text für Debugging
-            return response.text().then(text => {
-                console.error('Received non-JSON response:', text.substring(0, 200));
-                throw new Error('Server gab keine JSON-Antwort zurück. Siehe Browser-Konsole für Details.');
-            });
-        }
-
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('✓ Prompt erfolgreich gelöscht');
@@ -562,6 +549,7 @@ function deletePrompt(promptId) {
         }
     })
     .catch(error => {
+        console.error('Delete error:', error);
         alert('❌ Fehler: ' + error.message);
     });
 }
