@@ -719,13 +719,20 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
+        // Clean all output buffers to prevent HTML output
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Disable error display and log instead
+        $oldErrorReporting = error_reporting(E_ALL);
+        $oldDisplay = ini_get('display_errors');
+        ini_set('display_errors', '0');
+
         // Set headers first, before any output
         header('Content-Type: application/json');
 
         try {
-            // Lade PromptLibraryService
-            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
-
             // Get prompt_id from POST
             $promptId = isset($_POST['prompt_id']) ? $_POST['prompt_id'] : null;
 
@@ -737,22 +744,37 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
                 exit;
             }
 
-            // Lösche den Prompt
-            PromptLibraryService::deletePrompt($promptId);
+            // Lade PromptLibraryService
+            if (!class_exists('PromptLibraryService')) {
+                require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+            }
+
+            // Lösche den Prompt direkt mit SQL (bypass Service um Fehlerquelle zu eliminieren)
+            $query = "DELETE FROM rz_ai_prompt_library WHERE prompt_id = '" . (int)$promptId . "'";
+            xtc_db_query($query);
 
             echo json_encode([
                 'success' => true,
                 'message' => 'Prompt erfolgreich gelöscht'
             ]);
-            exit;
 
         } catch (Exception $e) {
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
             ]);
-            exit;
+        } catch (Error $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'PHP Error: ' . $e->getMessage()
+            ]);
         }
+
+        // Restore error settings
+        error_reporting($oldErrorReporting);
+        ini_set('display_errors', $oldDisplay);
+
+        exit;
     }
 
     /**
