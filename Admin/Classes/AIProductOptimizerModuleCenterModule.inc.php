@@ -31,10 +31,13 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
     public function install()
     {
         parent::install();
-        
+
         // Backup-Tabelle erstellen
         $this->_createBackupTable();
-        
+
+        // Prompt-Library-Tabelle erstellen
+        $this->_createPromptLibraryTable();
+
         // Konfigurationseinträge erstellen
         $this->_createConfigEntry('MODULE_AI_OPTIMIZER_OPENAI_API_KEY', '', 6, 1);
         $this->_createConfigEntry('MODULE_AI_OPTIMIZER_MODEL', 'gpt-4o', 6, 2);
@@ -66,6 +69,72 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
 
         xtc_db_query($sql);
     }
+
+    /**
+     * Erstellt die Prompt-Library-Tabelle
+     */
+    private function _createPromptLibraryTable()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS `rz_ai_prompt_library` (
+          `prompt_id` int(11) NOT NULL AUTO_INCREMENT,
+          `prompt_label` varchar(255) NOT NULL COMMENT 'Benutzerdefiniertes Label/Name für den Prompt',
+          `prompt_description` text DEFAULT NULL COMMENT 'Optionale Beschreibung des Prompts',
+          `system_prompt` text NOT NULL COMMENT 'System Prompt für OpenAI',
+          `user_prompt` longtext NOT NULL COMMENT 'User Prompt Template mit Platzhaltern',
+          `is_default` tinyint(1) DEFAULT 0 COMMENT 'Flag ob dies der Standard-Prompt ist',
+          `is_active` tinyint(1) DEFAULT 1 COMMENT 'Flag ob der Prompt aktiv/sichtbar ist',
+          `created_at` datetime NOT NULL COMMENT 'Erstellungsdatum',
+          `updated_at` datetime DEFAULT NULL COMMENT 'Letztes Änderungsdatum',
+          `usage_count` int(11) DEFAULT 0 COMMENT 'Anzahl der Verwendungen',
+          `last_used_at` datetime DEFAULT NULL COMMENT 'Letzter Verwendungszeitpunkt',
+          PRIMARY KEY (`prompt_id`),
+          KEY `idx_is_active` (`is_active`),
+          KEY `idx_is_default` (`is_default`),
+          KEY `idx_usage_count` (`usage_count`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Prompt-Bibliothek für AI Product Optimizer'";
+
+        xtc_db_query($sql);
+
+        // Standard-Prompts einfügen, falls die Tabelle leer ist
+        $this->_insertDefaultPrompts();
+    }
+
+    /**
+     * Fügt die Standard-Prompts ein, falls noch keine vorhanden sind
+     */
+    private function _insertDefaultPrompts()
+    {
+        // Prüfen ob bereits Prompts vorhanden sind
+        $result = xtc_db_query("SELECT COUNT(*) as count FROM `rz_ai_prompt_library`");
+        $row = xtc_db_fetch_array($result);
+
+        if ($row['count'] > 0) {
+            return; // Bereits Prompts vorhanden
+        }
+
+        // Standard-Prompts aus default_prompts.sql laden und ausführen
+        $sqlFile = dirname(dirname(dirname(__FILE__))) . '/default_prompts.sql';
+
+        if (file_exists($sqlFile)) {
+            $sql = file_get_contents($sqlFile);
+
+            // SQL in einzelne Statements aufteilen und ausführen
+            $statements = array_filter(
+                array_map('trim', explode(';', $sql)),
+                function($statement) {
+                    return !empty($statement) &&
+                           strpos($statement, '--') !== 0 &&
+                           !preg_match('/^--/', $statement);
+                }
+            );
+
+            foreach ($statements as $statement) {
+                if (!empty($statement)) {
+                    xtc_db_query($statement);
+                }
+            }
+        }
+    }
     
     /**
      * Deinstallation des Moduls
@@ -74,12 +143,15 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
     {
         // Backup-Tabelle löschen
         xtc_db_query("DROP TABLE IF EXISTS `rz_ai_optimizer_backup`");
-        
+
+        // Prompt-Library-Tabelle löschen
+        xtc_db_query("DROP TABLE IF EXISTS `rz_ai_prompt_library`");
+
         // Konfigurationswerte entfernen
         $db = StaticGXCoreLoader::getDatabaseQueryBuilder();
         $db->where('configuration_key', 'LIKE', 'MODULE_AI_OPTIMIZER_%')
            ->delete('configuration');
-        
+
         parent::uninstall();
     }
     
