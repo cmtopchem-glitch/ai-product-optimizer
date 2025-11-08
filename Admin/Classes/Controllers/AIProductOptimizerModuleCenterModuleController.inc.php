@@ -719,65 +719,37 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
-        // Clear all output buffers completely
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
-
-        // Set headers immediately
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-cache, must-revalidate');
+        ob_start();
 
         try {
+            ob_clean();
+
             // Lade PromptLibraryService falls noch nicht geladen
             if (!class_exists('PromptLibraryService')) {
                 require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
             }
 
-            // Try different ways to get POST data
-            $promptId = null;
-            if (isset($_POST['prompt_id'])) {
-                $promptId = $_POST['prompt_id'];
-            } elseif (method_exists($this, '_getPostData')) {
-                $promptId = $this->_getPostData('prompt_id');
-            }
+            $promptId = $this->_getPostData('prompt_id');
 
             if (empty($promptId)) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Prompt-ID fehlt',
-                    'debug' => [
-                        'POST' => $_POST,
-                        'method' => $_SERVER['REQUEST_METHOD']
-                    ]
-                ]);
-                exit;
+                throw new Exception('Prompt-ID fehlt');
             }
 
-            // Lösche den Prompt
-            $success = PromptLibraryService::deletePrompt($promptId);
+            // Lösche den Prompt - Rückgabewert ignorieren
+            PromptLibraryService::deletePrompt($promptId);
 
-            echo json_encode([
+            ob_clean();
+            $this->_jsonResponse([
                 'success' => true,
-                'message' => 'Prompt erfolgreich gelöscht',
-                'deleted' => $success
+                'message' => 'Prompt erfolgreich gelöscht'
             ]);
-            exit;
 
         } catch (Exception $e) {
-            echo json_encode([
+            ob_clean();
+            $this->_jsonResponse([
                 'success' => false,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
-            exit;
-        } catch (Error $e) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'PHP Error: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            exit;
         }
     }
 
