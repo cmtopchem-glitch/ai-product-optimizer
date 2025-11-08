@@ -149,9 +149,9 @@ var AIProductOptimizer = {
     getOriginalDescription: function() {
         var descFieldName = 'products_description_2';
         if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[descFieldName]) {
+            // Hole HTML-Daten INKLUSIVE aller Tags (Bilder, Videos, etc.)
             var data = CKEDITOR.instances[descFieldName].getData();
-            var temp = $('<div>').html(data).text();
-            return temp.trim();
+            return data.trim();
         }
         return $('textarea[name="' + descFieldName + '"]').val() || '';
     },
