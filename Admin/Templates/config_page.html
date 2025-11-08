@@ -143,7 +143,87 @@
         <button type="submit" class="btn btn-primary">💾 Speichern</button>
         <a href="admin.php?do=ModuleCenter" class="btn">← Zurück</a>
     </form>
-    
+
+    <h2 class="section-title">📚 Prompt-Bibliothek</h2>
+    <p>Speichern und verwalten Sie mehrere Prompt-Templates. Sie können gespeicherte Prompts jederzeit laden und verwenden.</p>
+
+    <div class="form-group">
+        <button type="button" class="btn btn-primary" onclick="showAddPromptDialog()">➕ Neuen Prompt speichern</button>
+        <button type="button" class="btn btn-secondary" onclick="loadPromptLibrary()">🔄 Bibliothek aktualisieren</button>
+    </div>
+
+    <div id="prompt-library-list" style="margin-top: 20px;">
+        <p style="color: #666;">Lade Prompt-Bibliothek...</p>
+    </div>
+
+    <!-- Modal für neuen Prompt -->
+    <div id="add-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; max-width: 800px; margin: 50px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+            <h3>📝 Neuen Prompt speichern</h3>
+            <div class="form-group">
+                <label>Label/Name *</label>
+                <input type="text" class="form-control" id="new-prompt-label" placeholder="z.B. SEO-optimiert, Verkaufsorientiert, Technisch">
+            </div>
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea class="form-control" id="new-prompt-description" rows="2" placeholder="Optionale Beschreibung für diesen Prompt"></textarea>
+            </div>
+            <div class="form-group">
+                <label>System-Prompt *</label>
+                <textarea class="form-control" id="new-prompt-system" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>User-Prompt *</label>
+                <textarea class="form-control" id="new-prompt-user" rows="10"></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="new-prompt-default"> Als Standard-Prompt setzen
+                </label>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">💾 Prompt speichern</button>
+            <button type="button" class="btn btn-secondary" onclick="hideAddPromptDialog()">Abbrechen</button>
+            <p id="save-prompt-status" class="help-block"></p>
+        </div>
+    </div>
+
+    <!-- Modal für Prompt bearbeiten -->
+    <div id="edit-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; max-width: 800px; margin: 50px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
+            <h3>✏️ Prompt bearbeiten</h3>
+            <input type="hidden" id="edit-prompt-id">
+            <div class="form-group">
+                <label>Label/Name *</label>
+                <input type="text" class="form-control" id="edit-prompt-label">
+            </div>
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea class="form-control" id="edit-prompt-description" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>System-Prompt *</label>
+                <textarea class="form-control" id="edit-prompt-system" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>User-Prompt *</label>
+                <textarea class="form-control" id="edit-prompt-user" rows="10"></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="edit-prompt-default"> Als Standard-Prompt setzen
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="edit-prompt-active" checked> Aktiv
+                </label>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">💾 Änderungen speichern</button>
+            <button type="button" class="btn btn-secondary" onclick="hideEditPromptDialog()">Abbrechen</button>
+            <p id="edit-prompt-status" class="help-block"></p>
+        </div>
+    </div>
+
     <hr style="margin-top: 40px;">
     <h3>📝 Verwendung</h3>
     <ol>
@@ -200,7 +280,7 @@ function updateModels() {
     var statusEl = document.getElementById('update-status');
     statusEl.innerHTML = '⏳ Lade Modelle von OpenAI...';
     statusEl.style.color = '#666';
-    
+
     fetch('admin.php?do=AIProductOptimizerModuleCenterModule/UpdateModels', {
         method: 'POST'
     })
@@ -220,6 +300,291 @@ function updateModels() {
         statusEl.style.color = '#dc3545';
     });
 }
+
+// ============================================================
+// Prompt Library Functions
+// ============================================================
+
+function loadPromptLibrary() {
+    var listEl = document.getElementById('prompt-library-list');
+    listEl.innerHTML = '<p style="color: #666;">⏳ Lade Prompts...</p>';
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayPromptLibrary(data.prompts);
+        } else {
+            listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + data.error + '</p>';
+        }
+    })
+    .catch(error => {
+        listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + error.message + '</p>';
+    });
+}
+
+function displayPromptLibrary(prompts) {
+    var listEl = document.getElementById('prompt-library-list');
+
+    if (prompts.length === 0) {
+        listEl.innerHTML = '<p style="color: #666;">Noch keine Prompts gespeichert. Klicken Sie auf "Neuen Prompt speichern" um zu beginnen.</p>';
+        return;
+    }
+
+    var html = '<table style="width: 100%; border-collapse: collapse;">';
+    html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
+    html += '<th style="padding: 10px; text-align: left;">Label</th>';
+    html += '<th style="padding: 10px; text-align: left;">Beschreibung</th>';
+    html += '<th style="padding: 10px; text-align: center;">Standard</th>';
+    html += '<th style="padding: 10px; text-align: center;">Verwendet</th>';
+    html += '<th style="padding: 10px; text-align: right;">Aktionen</th>';
+    html += '</tr></thead><tbody>';
+
+    prompts.forEach(function(prompt) {
+        html += '<tr style="border-bottom: 1px solid #ddd;">';
+        html += '<td style="padding: 10px;"><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
+        html += '<td style="padding: 10px;">' + (prompt.prompt_description ? escapeHtml(prompt.prompt_description) : '<em style="color: #999;">-</em>') + '</td>';
+        html += '<td style="padding: 10px; text-align: center;">' + (prompt.is_default == 1 ? '⭐ Ja' : '-') + '</td>';
+        html += '<td style="padding: 10px; text-align: center;">' + (prompt.usage_count || 0) + 'x</td>';
+        html += '<td style="padding: 10px; text-align: right;">';
+        html += '<button class="btn btn-info btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="loadPromptIntoForm(' + prompt.prompt_id + ')">📥 Laden</button> ';
+        html += '<button class="btn btn-secondary btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="editPrompt(' + prompt.prompt_id + ')">✏️ Bearbeiten</button> ';
+        if (prompt.is_default != 1) {
+            html += '<button class="btn btn-info btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="setDefaultPrompt(' + prompt.prompt_id + ')">⭐ Als Standard</button> ';
+        }
+        html += '<button class="btn btn-secondary btn-sm" style="padding: 5px 10px; margin: 2px; background: #dc3545;" onclick="deletePrompt(' + prompt.prompt_id + ')">🗑️ Löschen</button>';
+        html += '</td>';
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    listEl.innerHTML = html;
+}
+
+function showAddPromptDialog() {
+    // Kopiere aktuelle Werte aus dem Formular
+    document.getElementById('new-prompt-system').value = document.querySelector('textarea[name="system_prompt"]').value;
+    document.getElementById('new-prompt-user').value = document.querySelector('textarea[name="user_prompt"]').value;
+    document.getElementById('new-prompt-label').value = '';
+    document.getElementById('new-prompt-description').value = '';
+    document.getElementById('new-prompt-default').checked = false;
+    document.getElementById('save-prompt-status').innerHTML = '';
+    document.getElementById('add-prompt-modal').style.display = 'block';
+}
+
+function hideAddPromptDialog() {
+    document.getElementById('add-prompt-modal').style.display = 'none';
+}
+
+function saveNewPrompt() {
+    var label = document.getElementById('new-prompt-label').value;
+    var description = document.getElementById('new-prompt-description').value;
+    var systemPrompt = document.getElementById('new-prompt-system').value;
+    var userPrompt = document.getElementById('new-prompt-user').value;
+    var isDefault = document.getElementById('new-prompt-default').checked ? '1' : '0';
+    var statusEl = document.getElementById('save-prompt-status');
+
+    if (!label || !systemPrompt || !userPrompt) {
+        statusEl.innerHTML = '❌ Bitte alle Pflichtfelder ausfüllen';
+        statusEl.style.color = '#dc3545';
+        return;
+    }
+
+    statusEl.innerHTML = '⏳ Speichert Prompt...';
+    statusEl.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('label', label);
+    formData.append('description', description);
+    formData.append('system_prompt', systemPrompt);
+    formData.append('user_prompt', userPrompt);
+    formData.append('is_default', isDefault);
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/CreatePrompt', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.innerHTML = '✓ Prompt erfolgreich gespeichert!';
+            statusEl.style.color = '#28a745';
+            setTimeout(() => {
+                hideAddPromptDialog();
+                loadPromptLibrary();
+            }, 1500);
+        } else {
+            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.style.color = '#dc3545';
+        }
+    })
+    .catch(error => {
+        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.style.color = '#dc3545';
+    });
+}
+
+function loadPromptIntoForm(promptId) {
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompt&prompt_id=' + promptId)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var prompt = data.prompt;
+            document.querySelector('textarea[name="system_prompt"]').value = prompt.system_prompt;
+            document.querySelector('textarea[name="user_prompt"]').value = prompt.user_prompt;
+            alert('✓ Prompt "' + prompt.prompt_label + '" wurde in das Formular geladen. Vergessen Sie nicht zu speichern!');
+            window.scrollTo(0, 0);
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler: ' + error.message);
+    });
+}
+
+function editPrompt(promptId) {
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompt&prompt_id=' + promptId)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var prompt = data.prompt;
+            document.getElementById('edit-prompt-id').value = prompt.prompt_id;
+            document.getElementById('edit-prompt-label').value = prompt.prompt_label;
+            document.getElementById('edit-prompt-description').value = prompt.prompt_description || '';
+            document.getElementById('edit-prompt-system').value = prompt.system_prompt;
+            document.getElementById('edit-prompt-user').value = prompt.user_prompt;
+            document.getElementById('edit-prompt-default').checked = prompt.is_default == 1;
+            document.getElementById('edit-prompt-active').checked = prompt.is_active == 1;
+            document.getElementById('edit-prompt-status').innerHTML = '';
+            document.getElementById('edit-prompt-modal').style.display = 'block';
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler: ' + error.message);
+    });
+}
+
+function hideEditPromptDialog() {
+    document.getElementById('edit-prompt-modal').style.display = 'none';
+}
+
+function saveEditedPrompt() {
+    var promptId = document.getElementById('edit-prompt-id').value;
+    var label = document.getElementById('edit-prompt-label').value;
+    var description = document.getElementById('edit-prompt-description').value;
+    var systemPrompt = document.getElementById('edit-prompt-system').value;
+    var userPrompt = document.getElementById('edit-prompt-user').value;
+    var isDefault = document.getElementById('edit-prompt-default').checked ? '1' : '0';
+    var isActive = document.getElementById('edit-prompt-active').checked ? '1' : '0';
+    var statusEl = document.getElementById('edit-prompt-status');
+
+    if (!label || !systemPrompt || !userPrompt) {
+        statusEl.innerHTML = '❌ Bitte alle Pflichtfelder ausfüllen';
+        statusEl.style.color = '#dc3545';
+        return;
+    }
+
+    statusEl.innerHTML = '⏳ Speichert Änderungen...';
+    statusEl.style.color = '#666';
+
+    var formData = new FormData();
+    formData.append('prompt_id', promptId);
+    formData.append('label', label);
+    formData.append('description', description);
+    formData.append('system_prompt', systemPrompt);
+    formData.append('user_prompt', userPrompt);
+    formData.append('is_default', isDefault);
+    formData.append('is_active', isActive);
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/UpdatePrompt', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.innerHTML = '✓ Änderungen erfolgreich gespeichert!';
+            statusEl.style.color = '#28a745';
+            setTimeout(() => {
+                hideEditPromptDialog();
+                loadPromptLibrary();
+            }, 1500);
+        } else {
+            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.style.color = '#dc3545';
+        }
+    })
+    .catch(error => {
+        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.style.color = '#dc3545';
+    });
+}
+
+function deletePrompt(promptId) {
+    if (!confirm('Möchten Sie diesen Prompt wirklich löschen?')) {
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('prompt_id', promptId);
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/DeletePrompt', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ Prompt erfolgreich gelöscht');
+            loadPromptLibrary();
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler: ' + error.message);
+    });
+}
+
+function setDefaultPrompt(promptId) {
+    if (!confirm('Möchten Sie diesen Prompt als Standard setzen?')) {
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('prompt_id', promptId);
+
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/SetDefaultPrompt', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ Standard-Prompt erfolgreich gesetzt');
+            loadPromptLibrary();
+        } else {
+            alert('❌ Fehler: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler: ' + error.message);
+    });
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Lade Prompt-Bibliothek beim Laden der Seite
+document.addEventListener('DOMContentLoaded', function() {
+    loadPromptLibrary();
+});
 </script>
 </body>
 </html>

@@ -28,33 +28,71 @@ class OpenAIService
     }
     
     /**
-     * Lädt Prompts aus der Konfiguration
+     * Lädt Prompts aus der Konfiguration oder Bibliothek
+     * @param int|null $promptId Optional: ID eines Prompts aus der Bibliothek
      */
-    private function loadPrompts()
+    private function loadPrompts($promptId = null)
     {
-        // Lade System-Prompt
+        // Wenn eine Prompt-ID angegeben wurde, lade aus der Bibliothek
+        if ($promptId !== null) {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+            $prompt = PromptLibraryService::getPromptById($promptId);
+
+            if ($prompt) {
+                $this->systemPrompt = $prompt['system_prompt'];
+                $this->userPrompt = $prompt['user_prompt'];
+                // Erhöhe Verwendungszähler
+                PromptLibraryService::incrementUsageCount($promptId);
+                return;
+            }
+        }
+
+        // Versuche Default-Prompt aus der Bibliothek zu laden
+        if (file_exists(DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php')) {
+            require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
+            $defaultPrompt = PromptLibraryService::getDefaultPrompt();
+
+            if ($defaultPrompt) {
+                $this->systemPrompt = $defaultPrompt['system_prompt'];
+                $this->userPrompt = $defaultPrompt['user_prompt'];
+                // Erhöhe Verwendungszähler
+                PromptLibraryService::incrementUsageCount($defaultPrompt['prompt_id']);
+                return;
+            }
+        }
+
+        // Lade System-Prompt aus Konfiguration
         $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_SYSTEM_PROMPT' LIMIT 1";
         $result = xtc_db_query($query);
         if ($row = xtc_db_fetch_array($result)) {
             $this->systemPrompt = $row['gm_value'];
         }
-        
+
         // Fallback wenn nicht konfiguriert
         if (empty($this->systemPrompt)) {
             $this->systemPrompt = 'Du bist ein professioneller E-Commerce SEO-Texter. Du antwortest immer im angeforderten JSON-Format.';
         }
-        
+
         // Lade User-Prompt Template
         $query = "SELECT gm_value FROM gm_configuration WHERE gm_key = 'OPENAI_USER_PROMPT' LIMIT 1";
         $result = xtc_db_query($query);
         if ($row = xtc_db_fetch_array($result)) {
             $this->userPrompt = $row['gm_value'];
         }
-        
+
         // Fallback wenn nicht konfiguriert
         if (empty($this->userPrompt)) {
             $this->userPrompt = $this->getDefaultUserPrompt();
         }
+    }
+
+    /**
+     * Setzt einen Prompt aus der Bibliothek
+     * @param int $promptId ID des Prompts aus der Bibliothek
+     */
+    public function usePromptFromLibrary($promptId)
+    {
+        $this->loadPrompts($promptId);
     }
     
 

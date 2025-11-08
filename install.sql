@@ -48,3 +48,27 @@ CREATE INDEX `idx_product_restored` ON `rz_ai_optimizer_backup` (`products_id`, 
 --    "Original wiederherstellen" Button wiederhergestellt werden
 --
 -- ============================================================
+
+-- ============================================================
+-- Prompt Library - Tabelle für gespeicherte Prompt-Templates
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS `rz_ai_prompt_library` (
+  `prompt_id` int(11) NOT NULL AUTO_INCREMENT,
+  `prompt_label` varchar(255) NOT NULL COMMENT 'Benutzerdefiniertes Label/Name für den Prompt',
+  `prompt_description` text DEFAULT NULL COMMENT 'Optionale Beschreibung des Prompts',
+  `system_prompt` text NOT NULL COMMENT 'System Prompt für OpenAI',
+  `user_prompt` longtext NOT NULL COMMENT 'User Prompt Template mit Platzhaltern',
+  `is_default` tinyint(1) DEFAULT 0 COMMENT 'Flag ob dies der Standard-Prompt ist',
+  `is_active` tinyint(1) DEFAULT 1 COMMENT 'Flag ob der Prompt aktiv/sichtbar ist',
+  `created_at` datetime NOT NULL COMMENT 'Erstellungsdatum',
+  `updated_at` datetime DEFAULT NULL COMMENT 'Letztes Änderungsdatum',
+  `usage_count` int(11) DEFAULT 0 COMMENT 'Anzahl der Verwendungen',
+  `last_used_at` datetime DEFAULT NULL COMMENT 'Letzter Verwendungszeitpunkt',
+  PRIMARY KEY (`prompt_id`),
+  KEY `idx_is_active` (`is_active`),
+  KEY `idx_is_default` (`is_default`),
+  KEY `idx_usage_count` (`usage_count`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Prompt-Bibliothek für AI Product Optimizer';
+
+-- ============================================================
