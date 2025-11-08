@@ -719,38 +719,14 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
      */
     public function actionDeletePrompt()
     {
-        ob_start();
-
-        try {
-            ob_clean();
-
-            // Lade PromptLibraryService falls noch nicht geladen
-            if (!class_exists('PromptLibraryService')) {
-                require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
-            }
-
-            $promptId = $this->_getPostData('prompt_id');
-
-            if (empty($promptId)) {
-                throw new Exception('Prompt-ID fehlt');
-            }
-
-            // Lösche den Prompt - Rückgabewert ignorieren
-            PromptLibraryService::deletePrompt($promptId);
-
-            ob_clean();
-            $this->_jsonResponse([
-                'success' => true,
-                'message' => 'Prompt erfolgreich gelöscht'
-            ]);
-
-        } catch (Exception $e) {
-            ob_clean();
-            $this->_jsonResponse([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
-        }
+        // Minimal test version - just return success without doing anything
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'message' => 'Test: Action wurde aufgerufen',
+            'test_mode' => true
+        ]);
+        exit;
     }
 
     /**
