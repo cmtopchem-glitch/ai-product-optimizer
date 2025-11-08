@@ -77,6 +77,7 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
     {
         $sql = "CREATE TABLE IF NOT EXISTS `rz_ai_prompt_library` (
           `prompt_id` int(11) NOT NULL AUTO_INCREMENT,
+          `prompt_type` varchar(20) NOT NULL DEFAULT 'product' COMMENT 'Typ: product oder vision',
           `prompt_label` varchar(255) NOT NULL COMMENT 'Benutzerdefiniertes Label/Name für den Prompt',
           `prompt_description` text DEFAULT NULL COMMENT 'Optionale Beschreibung des Prompts',
           `system_prompt` text NOT NULL COMMENT 'System Prompt für OpenAI',
@@ -88,6 +89,7 @@ class AIProductOptimizerModuleCenterModule extends AbstractModuleCenterModule
           `usage_count` int(11) DEFAULT 0 COMMENT 'Anzahl der Verwendungen',
           `last_used_at` datetime DEFAULT NULL COMMENT 'Letzter Verwendungszeitpunkt',
           PRIMARY KEY (`prompt_id`),
+          KEY `idx_prompt_type` (`prompt_type`),
           KEY `idx_is_active` (`is_active`),
           KEY `idx_is_default` (`is_default`),
           KEY `idx_usage_count` (`usage_count`)
