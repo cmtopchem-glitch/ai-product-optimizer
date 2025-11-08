@@ -140,6 +140,12 @@
             <button type="button" class="btn btn-info btn-sm" onclick="resetUserPrompt()">Standard wiederherstellen</button>
         </div>
 
+        <div class="form-group" style="background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-top: 20px;">
+            <h4 style="margin-top: 0;">📚 Prompt-Bibliothek für Produkttexte</h4>
+            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die Produkttext-Generierung.</p>
+            <button type="button" class="btn btn-primary" onclick="showProductPromptLibrary()">📖 Bibliothek öffnen</button>
+        </div>
+
         <h2 class="section-title">🖼️ ALT-Text-Generierung (Barrierefreiheit)</h2>
 
         <div class="form-group">
@@ -170,21 +176,15 @@
             <button type="button" class="btn btn-info btn-sm" onclick="resetVisionUserPrompt()">Standard wiederherstellen</button>
         </div>
 
+        <div class="form-group" style="background: #f8f9fa; padding: 15px; border-left: 4px solid #17a2b8; margin-top: 20px;">
+            <h4 style="margin-top: 0;">📚 Prompt-Bibliothek für ALT-Texte</h4>
+            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die ALT-Text-Generierung.</p>
+            <button type="button" class="btn btn-primary" onclick="showVisionPromptLibrary()">📖 Bibliothek öffnen</button>
+        </div>
+
         <button type="submit" class="btn btn-primary">💾 Speichern</button>
         <a href="admin.php?do=ModuleCenter" class="btn">← Zurück</a>
     </form>
-
-    <h2 class="section-title">📚 Prompt-Bibliothek</h2>
-    <p>Speichern und verwalten Sie mehrere Prompt-Templates. Sie können gespeicherte Prompts jederzeit laden und verwenden.</p>
-
-    <div class="form-group">
-        <button type="button" class="btn btn-primary" onclick="showAddPromptDialog()">➕ Neuen Prompt speichern</button>
-        <button type="button" class="btn btn-secondary" onclick="loadPromptLibrary()">🔄 Bibliothek aktualisieren</button>
-    </div>
-
-    <div id="prompt-library-list" style="margin-top: 20px;">
-        <p style="color: #666;">Lade Prompt-Bibliothek...</p>
-    </div>
 
     <!-- Modal für neuen Prompt -->
     <div id="add-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
@@ -370,15 +370,20 @@ function updateModels() {
 // Prompt Library Functions
 // ============================================================
 
-function loadPromptLibrary() {
+function loadPromptLibrary(promptType) {
     var listEl = document.getElementById('prompt-library-list');
     listEl.innerHTML = '<p style="color: #666;">⏳ Lade Prompts...</p>';
 
-    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1')
+    var url = 'admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1';
+    if (promptType) {
+        url += '&prompt_type=' + promptType;
+    }
+
+    fetch(url)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            displayPromptLibrary(data.prompts);
+            displayPromptLibrary(data.prompts, promptType);
         } else {
             listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + data.error + '</p>';
         }
@@ -426,14 +431,21 @@ function displayPromptLibrary(prompts) {
     listEl.innerHTML = html;
 }
 
-function showAddPromptDialog() {
+function showAddPromptDialog(promptType) {
     // Kopiere aktuelle Werte aus dem Formular
-    document.getElementById('new-prompt-system').value = document.querySelector('textarea[name="system_prompt"]').value;
-    document.getElementById('new-prompt-user').value = document.querySelector('textarea[name="user_prompt"]').value;
+    if (promptType === 'vision') {
+        document.getElementById('new-prompt-system').value = document.querySelector('textarea[name="vision_system_prompt"]').value;
+        document.getElementById('new-prompt-user').value = document.querySelector('textarea[name="vision_user_prompt"]').value;
+    } else {
+        document.getElementById('new-prompt-system').value = document.querySelector('textarea[name="system_prompt"]').value;
+        document.getElementById('new-prompt-user').value = document.querySelector('textarea[name="user_prompt"]').value;
+    }
     document.getElementById('new-prompt-label').value = '';
     document.getElementById('new-prompt-description').value = '';
     document.getElementById('new-prompt-default').checked = false;
     document.getElementById('save-prompt-status').innerHTML = '';
+    // Speichere prompt_type in hidden field oder data-attribute
+    document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType || 'product');
     document.getElementById('add-prompt-modal').style.display = 'block';
 }
 
@@ -447,6 +459,7 @@ function saveNewPrompt() {
     var systemPrompt = document.getElementById('new-prompt-system').value;
     var userPrompt = document.getElementById('new-prompt-user').value;
     var isDefault = document.getElementById('new-prompt-default').checked ? '1' : '0';
+    var promptType = document.getElementById('add-prompt-modal').getAttribute('data-prompt-type') || 'product';
     var statusEl = document.getElementById('save-prompt-status');
 
     if (!label || !systemPrompt || !userPrompt) {
@@ -464,6 +477,7 @@ function saveNewPrompt() {
     formData.append('system_prompt', systemPrompt);
     formData.append('user_prompt', userPrompt);
     formData.append('is_default', isDefault);
+    formData.append('prompt_type', promptType);
 
     fetch('admin.php?do=AIProductOptimizerModuleCenterModule/CreatePrompt', {
         method: 'POST',
@@ -651,9 +665,23 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ============================================================
+// Separate Library Functions for Product and Vision
+// ============================================================
+
+function showProductPromptLibrary() {
+    alert('Produkttext Prompt-Bibliothek wird in Kürze implementiert.\n\nFür jetzt: Scrollen Sie nach unten zur Prompt-Bibliothek am Seitenende.');
+    // TODO: Implementieren Sie Modal mit loadPromptLibrary('product')
+}
+
+function showVisionPromptLibrary() {
+    alert('Vision/ALT-Text Prompt-Bibliothek wird in Kürze implementiert.\n\nAktuell können Sie beide Bibliotheken am Seitenende verwalten.');
+    // TODO: Implementieren Sie Modal mit loadPromptLibrary('vision')
+}
+
 // Lade Prompt-Bibliothek beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
-    loadPromptLibrary();
+    // loadPromptLibrary(); // Deaktiviert für jetzt
 });
 </script>
 </body>

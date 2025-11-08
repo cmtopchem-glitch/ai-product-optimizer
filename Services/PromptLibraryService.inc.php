@@ -14,17 +14,27 @@ class PromptLibraryService
 {
     /**
      * Holt alle aktiven Prompts aus der Bibliothek
+     * @param bool $activeOnly Nur aktive Prompts
+     * @param string $promptType Filter nach Typ: 'product', 'vision' oder leer für alle
      * @return array Array von Prompts
      */
-    public static function getAllPrompts($activeOnly = true)
+    public static function getAllPrompts($activeOnly = true, $promptType = '')
     {
-        $query = "SELECT prompt_id, prompt_label, prompt_description, system_prompt,
+        $query = "SELECT prompt_id, prompt_type, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
                   FROM rz_ai_prompt_library";
 
+        $conditions = [];
         if ($activeOnly) {
-            $query .= " WHERE is_active = 1";
+            $conditions[] = "is_active = 1";
+        }
+        if (!empty($promptType)) {
+            $conditions[] = "prompt_type = '" . xtc_db_input($promptType) . "'";
+        }
+
+        if (count($conditions) > 0) {
+            $query .= " WHERE " . implode(" AND ", $conditions);
         }
 
         $query .= " ORDER BY is_default DESC, usage_count DESC, prompt_label ASC";
@@ -35,6 +45,7 @@ class PromptLibraryService
         while ($row = xtc_db_fetch_array($result)) {
             $prompts[] = [
                 'prompt_id' => $row['prompt_id'],
+                'prompt_type' => $row['prompt_type'],
                 'prompt_label' => $row['prompt_label'],
                 'prompt_description' => $row['prompt_description'],
                 'system_prompt' => $row['system_prompt'],
@@ -58,7 +69,7 @@ class PromptLibraryService
      */
     public static function getPromptById($promptId)
     {
-        $query = "SELECT prompt_id, prompt_label, prompt_description, system_prompt,
+        $query = "SELECT prompt_id, prompt_type, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
                   FROM rz_ai_prompt_library
@@ -69,6 +80,7 @@ class PromptLibraryService
         if ($row = xtc_db_fetch_array($result)) {
             return [
                 'prompt_id' => $row['prompt_id'],
+                'prompt_type' => $row['prompt_type'],
                 'prompt_label' => $row['prompt_label'],
                 'prompt_description' => $row['prompt_description'],
                 'system_prompt' => $row['system_prompt'],
@@ -126,19 +138,21 @@ class PromptLibraryService
      * @param string $userPrompt User Prompt Template
      * @param string $description Optionale Beschreibung
      * @param bool $isDefault Ob dies der Standard-Prompt sein soll
+     * @param string $promptType Typ des Prompts: 'product' oder 'vision'
      * @return int Die ID des neu erstellten Prompts
      */
-    public static function createPrompt($label, $systemPrompt, $userPrompt, $description = '', $isDefault = false)
+    public static function createPrompt($label, $systemPrompt, $userPrompt, $description = '', $isDefault = false, $promptType = 'product')
     {
-        // Wenn dieser Prompt als Standard markiert wird, entferne Default-Flag von allen anderen
+        // Wenn dieser Prompt als Standard markiert wird, entferne Default-Flag von allen anderen desselben Typs
         if ($isDefault) {
-            self::clearDefaultFlag();
+            self::clearDefaultFlag($promptType);
         }
 
         $query = "INSERT INTO rz_ai_prompt_library
-            (prompt_label, prompt_description, system_prompt, user_prompt,
+            (prompt_type, prompt_label, prompt_description, system_prompt, user_prompt,
              is_default, is_active, created_at, usage_count)
             VALUES (
+                '" . xtc_db_input($promptType) . "',
                 '" . xtc_db_input($label) . "',
                 '" . xtc_db_input($description) . "',
                 '" . xtc_db_input($systemPrompt) . "',
@@ -166,9 +180,13 @@ class PromptLibraryService
      */
     public static function updatePrompt($promptId, $label, $systemPrompt, $userPrompt, $description = '', $isDefault = false, $isActive = true)
     {
-        // Wenn dieser Prompt als Standard markiert wird, entferne Default-Flag von allen anderen
+        // Wenn dieser Prompt als Standard markiert wird, entferne Default-Flag von allen anderen desselben Typs
         if ($isDefault) {
-            self::clearDefaultFlag();
+            // Hole den Typ des aktuellen Prompts
+            $currentPrompt = self::getPromptById($promptId);
+            if ($currentPrompt) {
+                self::clearDefaultFlag($currentPrompt['prompt_type']);
+            }
         }
 
         $query = "UPDATE rz_ai_prompt_library SET
@@ -206,8 +224,14 @@ class PromptLibraryService
      */
     public static function setAsDefault($promptId)
     {
-        // Entferne Default-Flag von allen Prompts
-        self::clearDefaultFlag();
+        // Hole den Typ des Prompts
+        $prompt = self::getPromptById($promptId);
+        if (!$prompt) {
+            return false;
+        }
+
+        // Entferne Default-Flag von allen Prompts desselben Typs
+        self::clearDefaultFlag($prompt['prompt_type']);
 
         // Setze neuen Default
         $query = "UPDATE rz_ai_prompt_library
@@ -219,11 +243,15 @@ class PromptLibraryService
     }
 
     /**
-     * Entfernt das Default-Flag von allen Prompts
+     * Entfernt das Default-Flag von allen Prompts eines bestimmten Typs
+     * @param string $promptType Typ der Prompts ('product' oder 'vision'), leer für alle
      */
-    private static function clearDefaultFlag()
+    private static function clearDefaultFlag($promptType = '')
     {
         $query = "UPDATE rz_ai_prompt_library SET is_default = 0";
+        if (!empty($promptType)) {
+            $query .= " WHERE prompt_type = '" . xtc_db_input($promptType) . "'";
+        }
         xtc_db_query($query);
     }
 

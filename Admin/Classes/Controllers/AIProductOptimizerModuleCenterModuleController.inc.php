@@ -596,7 +596,8 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             require_once DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Services/PromptLibraryService.inc.php';
 
             $activeOnly = $this->_getQueryParameter('active_only') !== '0';
-            $prompts = PromptLibraryService::getAllPrompts($activeOnly);
+            $promptType = $this->_getQueryParameter('prompt_type'); // 'product', 'vision' oder leer für alle
+            $prompts = PromptLibraryService::getAllPrompts($activeOnly, $promptType);
 
             ob_clean();
             $this->_jsonResponse([
@@ -667,12 +668,16 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
             $userPrompt = $this->_getPostData('user_prompt');
             $description = $this->_getPostData('description');
             $isDefault = $this->_getPostData('is_default') == '1';
+            $promptType = $this->_getPostData('prompt_type'); // 'product' oder 'vision'
+            if (empty($promptType)) {
+                $promptType = 'product'; // Standard
+            }
 
             if (empty($label) || empty($systemPrompt) || empty($userPrompt)) {
                 throw new Exception('Label, System Prompt und User Prompt sind erforderlich');
             }
 
-            $promptId = PromptLibraryService::createPrompt($label, $systemPrompt, $userPrompt, $description, $isDefault);
+            $promptId = PromptLibraryService::createPrompt($label, $systemPrompt, $userPrompt, $description, $isDefault, $promptType);
 
             ob_clean();
             $this->_jsonResponse([
