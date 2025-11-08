@@ -535,7 +535,24 @@ function deletePrompt(promptId) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        // Prüfe ob Response OK ist
+        if (!response.ok) {
+            throw new Error('Server returned ' + response.status + ': ' + response.statusText);
+        }
+
+        // Prüfe Content-Type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // Nicht-JSON Response erhalten - zeige Text für Debugging
+            return response.text().then(text => {
+                console.error('Received non-JSON response:', text.substring(0, 200));
+                throw new Error('Server gab keine JSON-Antwort zurück. Siehe Browser-Konsole für Details.');
+            });
+        }
+
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             alert('✓ Prompt erfolgreich gelöscht');
