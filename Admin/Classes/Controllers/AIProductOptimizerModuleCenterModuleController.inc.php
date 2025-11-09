@@ -356,19 +356,44 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
 
             $languages = $this->_getActiveLanguages();
             $results = array();
+            $errors = array();
+
+            // Log alle aktiven Sprachen für Debugging
+            error_log('AIProductOptimizer: Verarbeite Sprachen: ' . implode(', ', $languages));
 
             foreach ($languages as $lang) {
-                $results[$lang] = $service->generateSEOContent(
-                    $productName,
-                    $originalText,
-                    $lang,
-                    array('category' => $category, 'brand' => $brand)
-                );
+                try {
+                    error_log('AIProductOptimizer: Generiere Content für Sprache: ' . $lang);
+                    $results[$lang] = $service->generateSEOContent(
+                        $productName,
+                        $originalText,
+                        $lang,
+                        array('category' => $category, 'brand' => $brand)
+                    );
+                } catch (Exception $e) {
+                    // Logge den Fehler, aber fahre mit anderen Sprachen fort
+                    $errorMsg = 'Fehler bei Sprache ' . $lang . ': ' . $e->getMessage();
+                    error_log('AIProductOptimizer Error: ' . $errorMsg);
+                    $errors[$lang] = $errorMsg;
+                }
+            }
+
+            // Wenn keine Ergebnisse generiert wurden, werfe einen Fehler
+            if (empty($results)) {
+                throw new Exception('Keine Texte generiert. Fehler: ' . json_encode($errors));
             }
 
             // Clean output buffer before sending JSON
             ob_clean();
-            $this->_jsonResponse(array('success' => true, 'data' => $results));
+
+            // Füge Fehlerinformationen hinzu wenn vorhanden
+            $response = array('success' => true, 'data' => $results);
+            if (!empty($errors)) {
+                $response['warnings'] = $errors;
+                $response['message'] = 'Texte generiert, aber einige Sprachen fehlgeschlagen: ' . implode(', ', array_keys($errors));
+            }
+
+            $this->_jsonResponse($response);
         } catch (Exception $e) {
             // Clean output buffer before sending error JSON
             ob_clean();
