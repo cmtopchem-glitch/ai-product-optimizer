@@ -1,258 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
+<div class="ai-product-optimizer-config">
     <style>
-        .ai-config-container {
-            max-width: 100%;
-            padding: 20px;
-            background: #fff;
-        }
-
-        /* Simple Tab Navigation */
-        .simple-tabs {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-            border-bottom: 2px solid #ddd;
-            display: flex;
-        }
-
-        .simple-tabs li {
-            margin-right: 5px;
-        }
-
-        .simple-tabs a {
-            display: block;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #555;
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
-            transition: all 0.2s;
-        }
-
-        .simple-tabs a:hover {
-            background: #e9e9e9;
-        }
-
-        .simple-tabs a.active {
-            background: #fff;
-            color: #000;
-            font-weight: bold;
-            border-bottom: 2px solid #fff;
-            margin-bottom: -2px;
-        }
-
-        /* Tab Content */
-        .tab-content-pane {
-            display: none;
+        /* Minimal custom styles for inline ModuleCenter display */
+        .ai-product-optimizer-config {
             padding: 20px 0;
         }
 
-        .tab-content-pane.active {
-            display: block;
+        .ai-product-optimizer-config .tab-content {
+            padding-top: 20px;
         }
 
-        /* Alert Styles */
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            border: 1px solid transparent;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-danger {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-
-        .alert-warning {
-            background-color: #fff3cd;
-            border-color: #ffc107;
-            color: #856404;
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-control {
-            width: 100%;
-            max-width: 800px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
+        .ai-product-optimizer-config textarea.form-control {
             font-family: monospace;
             font-size: 13px;
+            min-height: 150px;
         }
 
-        .help-block {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-
-        .btn-default {
-            background: #f8f9fa;
-            color: #333;
-        }
-
-        .btn-default:hover {
-            background: #e2e6ea;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-
-        /* Info Box */
-        .placeholder-info {
-            background: #f8f9fa;
+        .ai-product-optimizer-config .placeholder-info {
+            background: #f5f5f5;
             padding: 10px;
             margin-top: 10px;
-            border-left: 3px solid #007bff;
+            border-left: 3px solid #337ab7;
             font-size: 13px;
         }
 
-        .placeholder-info code {
+        .ai-product-optimizer-config .placeholder-info code {
             background: #e9ecef;
             padding: 2px 6px;
             border-radius: 3px;
         }
 
-        /* Library Section */
-        .library-section {
-            background: #f8f9fa;
+        .ai-product-optimizer-config .library-section {
+            background: #f5f5f5;
             padding: 15px;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #337ab7;
             margin-top: 30px;
             border-radius: 4px;
         }
 
-        .library-section h4 {
+        .ai-product-optimizer-config .library-section h4 {
             margin-top: 0;
         }
 
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-        }
-
-        .modal-content-wrapper {
-            background: white;
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 30px;
-            border-radius: 8px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            border-left: 4px solid #007bff;
-            padding-left: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* Table */
-        .library-table {
+        .ai-product-optimizer-config .library-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .library-table thead tr {
-            background: #f8f9fa;
+        .ai-product-optimizer-config .library-table thead tr {
+            background: #f5f5f5;
         }
 
-        .library-table th,
-        .library-table td {
+        .ai-product-optimizer-config .library-table th,
+        .ai-product-optimizer-config .library-table td {
             padding: 10px;
             text-align: left;
             border: 1px solid #ddd;
         }
 
-        /* Icon Spacing */
-        .fa {
-            margin-right: 5px;
+        .ai-product-optimizer-config .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
         }
     </style>
-</head>
-<body>
-<div class="ai-config-container">
-    <h1 style="margin-bottom: 20px;">
+
+    <h2>
         <i class="fa fa-robot"></i> AI Product Optimizer - Konfiguration
-    </h1>
+    </h2>
 
     {if $success}
     <div class="alert alert-success">
@@ -268,7 +82,7 @@
 
     {if $backupWarning}
     <div class="alert alert-warning">
-        <h3 style="margin-top: 0;"><i class="fa fa-exclamation-triangle"></i> WARNUNG: Backup-Verzeichnisse gefunden!</h3>
+        <h4><i class="fa fa-exclamation-triangle"></i> WARNUNG: Backup-Verzeichnisse gefunden!</h4>
         <p><strong>{$backupWarning.message}</strong></p>
         <div style="margin: 15px 0; padding: 10px; background: #fffbf0; border-left: 4px solid #ff9800;">
             <p><strong>Gefundene Backup-Verzeichnisse ({$backupWarning.count}):</strong></p>
@@ -282,281 +96,358 @@
     </div>
     {/if}
 
-    <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
+    <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post" class="form-horizontal">
 
-        <!-- Simple Tab Navigation -->
-        <ul class="simple-tabs">
-            <li><a href="#" onclick="switchTab(event, 'tab-general')" class="active"><i class="fa fa-cog"></i> Grundeinstellungen</a></li>
-            <li><a href="#" onclick="switchTab(event, 'tab-product-prompts')"><i class="fa fa-file-text"></i> Produkt Prompts</a></li>
-            <li><a href="#" onclick="switchTab(event, 'tab-vision-prompts')"><i class="fa fa-image"></i> Bilder Prompts</a></li>
+        <!-- Bootstrap 3 Tab Navigation -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#tab-general" aria-controls="tab-general" role="tab" data-toggle="tab">
+                    <i class="fa fa-cog"></i> Grundeinstellungen
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#tab-product-prompts" aria-controls="tab-product-prompts" role="tab" data-toggle="tab">
+                    <i class="fa fa-file-text"></i> Produkt Prompts
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#tab-vision-prompts" aria-controls="tab-vision-prompts" role="tab" data-toggle="tab">
+                    <i class="fa fa-image"></i> Bilder Prompts
+                </a>
+            </li>
         </ul>
 
-        <!-- Tab 1: Grundeinstellungen -->
-        <div id="tab-general" class="tab-content-pane active">
-            <h2><i class="fa fa-key"></i> API-Einstellungen</h2>
+        <!-- Tab Content -->
+        <div class="tab-content">
 
-            <div class="form-group">
-                <label>OpenAI API Key *</label>
-                <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
-                <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
-            </div>
+            <!-- Tab 1: Grundeinstellungen -->
+            <div role="tabpanel" class="tab-pane active" id="tab-general">
+                <h3><i class="fa fa-key"></i> API-Einstellungen</h3>
 
-            <div class="form-group">
-                <label>OpenAI Project ID (optional)</label>
-                <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
-                <p class="help-block">Project ID für OpenAI Project-Keys. Format: proj_xxxxxxxxxx</p>
-            </div>
-
-            <div class="form-group">
-                <label>Modell für Produkttexte</label>
-                <select class="form-control" name="model">
-                    {if $availableModels && count($availableModels) > 0}
-                        {foreach from=$availableModels item=modelOption}
-                            <option value="{$modelOption.id}" {if $model == $modelOption.id}selected{/if}>{$modelOption.name}</option>
-                        {/foreach}
-                    {else}
-                        <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
-                        <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
-                    {/if}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Modell für Bilderkennung (ALT-Texte)</label>
-                <select class="form-control" name="vision_model">
-                    <option value="gpt-4o" {if $visionModel == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität, empfohlen)</option>
-                    <option value="gpt-4o-mini" {if $visionModel == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (schneller, günstiger)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <button type="button" class="btn btn-default" onclick="updateModels()">
-                    <i class="fa fa-refresh"></i> Modelle von OpenAI aktualisieren
-                </button>
-                <p class="help-block" id="update-status"></p>
-            </div>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
-                <h3><i class="fa fa-info-circle"></i> Verwendung</h3>
-                <ol>
-                    <li>Konfigurieren Sie Ihren OpenAI API Key und wählen Sie ein Modell</li>
-                    <li>Passen Sie optional die Prompts in den anderen Tabs an</li>
-                    <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
-                    <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
-                </ol>
-            </div>
-        </div>
-
-        <!-- Tab 2: Produkt Prompts -->
-        <div id="tab-product-prompts" class="tab-content-pane">
-            <h2><i class="fa fa-file-text"></i> Prompt-Konfiguration für Produkttexte</h2>
-
-            <div class="form-group">
-                <label>System-Prompt</label>
-                <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
-                <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI</p>
-                <button type="button" class="btn btn-default btn-sm" onclick="resetSystemPrompt()">
-                    <i class="fa fa-undo"></i> Standard wiederherstellen
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label>User-Prompt (Aufgabenstellung)</label>
-                <textarea class="form-control" name="user_prompt" rows="20">{$userPrompt|escape}</textarea>
-                <div class="placeholder-info">
-                    <strong>Verfügbare Platzhalter:</strong><br>
-                    <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
-                    <code>{literal}{ldelim}ORIGINAL_TEXT{rdelim}{/literal}</code> - Original Produktbeschreibung<br>
-                    <code>{literal}{ldelim}LANGUAGE{rdelim}{/literal}</code> - Zielsprache<br>
-                    <code>{literal}{ldelim}BRAND_LINE{rdelim}{/literal}</code> - Marke<br>
-                    <code>{literal}{ldelim}CATEGORY_LINE{rdelim}{/literal}</code> - Kategorie
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">OpenAI API Key *</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+                        <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-default btn-sm" onclick="resetUserPrompt()">
-                    <i class="fa fa-undo"></i> Standard wiederherstellen
-                </button>
-            </div>
 
-            <div class="library-section">
-                <h4><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
-                <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen.</p>
-                <button type="button" class="btn btn-primary" onclick="showProductPromptLibrary()">
-                    <i class="fa fa-book"></i> Bibliothek öffnen
-                </button>
-            </div>
-        </div>
-
-        <!-- Tab 3: Vision Prompts -->
-        <div id="tab-vision-prompts" class="tab-content-pane">
-            <h2><i class="fa fa-image"></i> Prompt-Konfiguration für ALT-Texte</h2>
-
-            <div class="form-group">
-                <label>System-Prompt für ALT-Texte</label>
-                <textarea class="form-control" name="vision_system_prompt" rows="4">{$visionSystemPrompt|escape}</textarea>
-                <p class="help-block">Definiert die Rolle für barrierefreie Bildbeschreibungen</p>
-                <button type="button" class="btn btn-default btn-sm" onclick="resetVisionSystemPrompt()">
-                    <i class="fa fa-undo"></i> Standard wiederherstellen
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label>User-Prompt für ALT-Texte</label>
-                <textarea class="form-control" name="vision_user_prompt" rows="15">{$visionUserPrompt|escape}</textarea>
-                <div class="placeholder-info">
-                    <strong>Verfügbare Platzhalter:</strong><br>
-                    <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
-                    <code>{literal}{ldelim}LANGUAGES{rdelim}{/literal}</code> - Liste der gewünschten Sprachen
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">OpenAI Project ID (optional)</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
+                        <p class="help-block">Project ID für OpenAI Project-Keys. Format: proj_xxxxxxxxxx</p>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-default btn-sm" onclick="resetVisionUserPrompt()">
-                    <i class="fa fa-undo"></i> Standard wiederherstellen
-                </button>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Modell für Produkttexte</label>
+                    <div class="col-sm-9">
+                        <select class="form-control" name="model">
+                            {if $availableModels && count($availableModels) > 0}
+                                {foreach from=$availableModels item=modelOption}
+                                    <option value="{$modelOption.id}" {if $model == $modelOption.id}selected{/if}>{$modelOption.name}</option>
+                                {/foreach}
+                            {else}
+                                <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
+                                <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
+                            {/if}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Modell für Bilderkennung (ALT-Texte)</label>
+                    <div class="col-sm-9">
+                        <select class="form-control" name="vision_model">
+                            <option value="gpt-4o" {if $visionModel == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität, empfohlen)</option>
+                            <option value="gpt-4o-mini" {if $visionModel == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (schneller, günstiger)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <button type="button" class="btn btn-default" onclick="updateModels()">
+                            <i class="fa fa-refresh"></i> Modelle von OpenAI aktualisieren
+                        </button>
+                        <p class="help-block" id="update-status"></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <div class="panel panel-info" style="margin-top: 30px;">
+                            <div class="panel-heading">
+                                <h4 class="panel-title"><i class="fa fa-info-circle"></i> Verwendung</h4>
+                            </div>
+                            <div class="panel-body">
+                                <ol>
+                                    <li>Konfigurieren Sie Ihren OpenAI API Key und wählen Sie ein Modell</li>
+                                    <li>Passen Sie optional die Prompts in den anderen Tabs an</li>
+                                    <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
+                                    <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="library-section" style="border-left-color: #17a2b8;">
-                <h4><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
-                <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen.</p>
-                <button type="button" class="btn btn-info" onclick="showVisionPromptLibrary()">
-                    <i class="fa fa-book"></i> Bibliothek öffnen
-                </button>
+            <!-- Tab 2: Produkt Prompts -->
+            <div role="tabpanel" class="tab-pane" id="tab-product-prompts">
+                <h3><i class="fa fa-file-text"></i> Prompt-Konfiguration für Produkttexte</h3>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">System-Prompt</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
+                        <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI</p>
+                        <button type="button" class="btn btn-default btn-sm" onclick="resetSystemPrompt()">
+                            <i class="fa fa-undo"></i> Standard wiederherstellen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">User-Prompt (Aufgabenstellung)</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" name="user_prompt" rows="20">{$userPrompt|escape}</textarea>
+                        <div class="placeholder-info">
+                            <strong>Verfügbare Platzhalter:</strong><br>
+                            <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                            <code>{literal}{ldelim}ORIGINAL_TEXT{rdelim}{/literal}</code> - Original Produktbeschreibung<br>
+                            <code>{literal}{ldelim}LANGUAGE{rdelim}{/literal}</code> - Zielsprache<br>
+                            <code>{literal}{ldelim}BRAND_LINE{rdelim}{/literal}</code> - Marke<br>
+                            <code>{literal}{ldelim}CATEGORY_LINE{rdelim}{/literal}</code> - Kategorie
+                        </div>
+                        <button type="button" class="btn btn-default btn-sm" onclick="resetUserPrompt()">
+                            <i class="fa fa-undo"></i> Standard wiederherstellen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <div class="library-section">
+                            <h4><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
+                            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen.</p>
+                            <button type="button" class="btn btn-primary" onclick="showProductPromptLibrary()">
+                                <i class="fa fa-book"></i> Bibliothek öffnen
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Tab 3: Vision Prompts -->
+            <div role="tabpanel" class="tab-pane" id="tab-vision-prompts">
+                <h3><i class="fa fa-image"></i> Prompt-Konfiguration für ALT-Texte</h3>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">System-Prompt für ALT-Texte</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" name="vision_system_prompt" rows="4">{$visionSystemPrompt|escape}</textarea>
+                        <p class="help-block">Definiert die Rolle für barrierefreie Bildbeschreibungen</p>
+                        <button type="button" class="btn btn-default btn-sm" onclick="resetVisionSystemPrompt()">
+                            <i class="fa fa-undo"></i> Standard wiederherstellen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">User-Prompt für ALT-Texte</label>
+                    <div class="col-sm-9">
+                        <textarea class="form-control" name="vision_user_prompt" rows="15">{$visionUserPrompt|escape}</textarea>
+                        <div class="placeholder-info">
+                            <strong>Verfügbare Platzhalter:</strong><br>
+                            <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                            <code>{literal}{ldelim}LANGUAGES{rdelim}{/literal}</code> - Liste der gewünschten Sprachen
+                        </div>
+                        <button type="button" class="btn btn-default btn-sm" onclick="resetVisionUserPrompt()">
+                            <i class="fa fa-undo"></i> Standard wiederherstellen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <div class="library-section" style="border-left-color: #5bc0de;">
+                            <h4><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
+                            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen.</p>
+                            <button type="button" class="btn btn-info" onclick="showVisionPromptLibrary()">
+                                <i class="fa fa-book"></i> Bibliothek öffnen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Form Actions -->
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
-            <button type="submit" class="btn btn-primary">
-                <i class="fa fa-save"></i> Einstellungen speichern
-            </button>
-            <a href="admin.php?do=ModuleCenter" class="btn btn-default">
-                <i class="fa fa-arrow-left"></i> Zurück zum Modulcenter
-            </a>
+        <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save"></i> Einstellungen speichern
+                </button>
+                <a href="admin.php?do=ModuleCenter" class="btn btn-default">
+                    <i class="fa fa-arrow-left"></i> Zurück zum Modulcenter
+                </a>
+            </div>
         </div>
     </form>
 
-    <!-- Modals (same as before) -->
-    <div id="add-prompt-modal" class="modal-overlay">
-        <div class="modal-content-wrapper">
-            <div class="modal-header">
-                <h3><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h3>
+    <!-- Bootstrap 3 Modal: Add Prompt -->
+    <div class="modal fade" id="add-prompt-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Label/Name *</label>
+                        <input type="text" class="form-control" id="new-prompt-label">
+                    </div>
+                    <div class="form-group">
+                        <label>Beschreibung</label>
+                        <textarea class="form-control" id="new-prompt-description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>System-Prompt *</label>
+                        <textarea class="form-control" id="new-prompt-system" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>User-Prompt *</label>
+                        <textarea class="form-control" id="new-prompt-user" rows="10"></textarea>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="new-prompt-default"> Als Standard-Prompt setzen
+                        </label>
+                    </div>
+                    <p id="save-prompt-status" class="help-block"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                    <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">
+                        <i class="fa fa-save"></i> Prompt speichern
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Label/Name *</label>
-                <input type="text" class="form-control" id="new-prompt-label">
-            </div>
-            <div class="form-group">
-                <label>Beschreibung</label>
-                <textarea class="form-control" id="new-prompt-description" rows="2"></textarea>
-            </div>
-            <div class="form-group">
-                <label>System-Prompt *</label>
-                <textarea class="form-control" id="new-prompt-system" rows="4"></textarea>
-            </div>
-            <div class="form-group">
-                <label>User-Prompt *</label>
-                <textarea class="form-control" id="new-prompt-user" rows="10"></textarea>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="new-prompt-default"> Als Standard-Prompt setzen</label>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">
-                <i class="fa fa-save"></i> Prompt speichern
-            </button>
-            <button type="button" class="btn btn-default" onclick="hideAddPromptDialog()">Abbrechen</button>
-            <p id="save-prompt-status" class="help-block"></p>
         </div>
     </div>
 
-    <div id="edit-prompt-modal" class="modal-overlay">
-        <div class="modal-content-wrapper">
-            <div class="modal-header">
-                <h3><i class="fa fa-edit"></i> Prompt bearbeiten</h3>
+    <!-- Bootstrap 3 Modal: Edit Prompt -->
+    <div class="modal fade" id="edit-prompt-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="fa fa-edit"></i> Prompt bearbeiten</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-prompt-id">
+                    <div class="form-group">
+                        <label>Label/Name *</label>
+                        <input type="text" class="form-control" id="edit-prompt-label">
+                    </div>
+                    <div class="form-group">
+                        <label>Beschreibung</label>
+                        <textarea class="form-control" id="edit-prompt-description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>System-Prompt *</label>
+                        <textarea class="form-control" id="edit-prompt-system" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>User-Prompt *</label>
+                        <textarea class="form-control" id="edit-prompt-user" rows="10"></textarea>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="edit-prompt-default"> Als Standard-Prompt setzen
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="edit-prompt-active" checked> Aktiv
+                        </label>
+                    </div>
+                    <p id="edit-prompt-status" class="help-block"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">
+                        <i class="fa fa-save"></i> Änderungen speichern
+                    </button>
+                </div>
             </div>
-            <input type="hidden" id="edit-prompt-id">
-            <div class="form-group">
-                <label>Label/Name *</label>
-                <input type="text" class="form-control" id="edit-prompt-label">
-            </div>
-            <div class="form-group">
-                <label>Beschreibung</label>
-                <textarea class="form-control" id="edit-prompt-description" rows="2"></textarea>
-            </div>
-            <div class="form-group">
-                <label>System-Prompt *</label>
-                <textarea class="form-control" id="edit-prompt-system" rows="4"></textarea>
-            </div>
-            <div class="form-group">
-                <label>User-Prompt *</label>
-                <textarea class="form-control" id="edit-prompt-user" rows="10"></textarea>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="edit-prompt-default"> Als Standard-Prompt setzen</label>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="edit-prompt-active" checked> Aktiv</label>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">
-                <i class="fa fa-save"></i> Änderungen speichern
-            </button>
-            <button type="button" class="btn btn-default" onclick="hideEditPromptDialog()">Abbrechen</button>
-            <p id="edit-prompt-status" class="help-block"></p>
         </div>
     </div>
 
-    <div id="product-library-modal" class="modal-overlay" onclick="if(event.target.id==='product-library-modal') hideProductLibrary();">
-        <div class="modal-content-wrapper">
-            <div class="modal-header">
-                <h3><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h3>
+    <!-- Bootstrap 3 Modal: Product Prompt Library -->
+    <div class="modal fade" id="product-library-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 20px;">
+                        <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">
+                            <i class="fa fa-plus"></i> Neuen Prompt erstellen
+                        </button>
+                    </div>
+                    <div id="product-library-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Schließen
+                    </button>
+                </div>
             </div>
-            <div style="margin-bottom: 20px;">
-                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">
-                    <i class="fa fa-plus"></i> Neuen Prompt erstellen
-                </button>
-                <button type="button" class="btn btn-default" style="float: right;" onclick="hideProductLibrary()">
-                    <i class="fa fa-times"></i> Schließen
-                </button>
-            </div>
-            <div id="product-library-list"></div>
         </div>
     </div>
 
-    <div id="vision-library-modal" class="modal-overlay" onclick="if(event.target.id==='vision-library-modal') hideVisionLibrary();">
-        <div class="modal-content-wrapper">
-            <div class="modal-header">
-                <h3><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h3>
+    <!-- Bootstrap 3 Modal: Vision Prompt Library -->
+    <div class="modal fade" id="vision-library-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 20px;">
+                        <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">
+                            <i class="fa fa-plus"></i> Neuen Prompt erstellen
+                        </button>
+                    </div>
+                    <div id="vision-library-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Schließen
+                    </button>
+                </div>
             </div>
-            <div style="margin-bottom: 20px;">
-                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">
-                    <i class="fa fa-plus"></i> Neuen Prompt erstellen
-                </button>
-                <button type="button" class="btn btn-default" style="float: right;" onclick="hideVisionLibrary()">
-                    <i class="fa fa-times"></i> Schließen
-                </button>
-            </div>
-            <div id="vision-library-list"></div>
         </div>
     </div>
 </div>
 
 <script>
-// Tab Switching
-function switchTab(event, tabId) {
-    event.preventDefault();
-
-    // Hide all tabs
-    var tabs = document.querySelectorAll('.tab-content-pane');
-    tabs.forEach(function(tab) {
-        tab.classList.remove('active');
-    });
-
-    // Remove active from all tab links
-    var links = document.querySelectorAll('.simple-tabs a');
-    links.forEach(function(link) {
-        link.classList.remove('active');
-    });
-
-    // Show selected tab
-    document.getElementById(tabId).classList.add('active');
-    event.target.classList.add('active');
-}
-
 // Default Prompts
 var defaultSystemPrompt = 'Du bist ein professioneller E-Commerce SEO-Texter. Du antwortest immer im angeforderten JSON-Format.';
 var defaultUserPrompt = `Du bist ein Experte für E-Commerce SEO und Produkttexte.
@@ -592,6 +483,7 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
   "en": "ALT-text in English"
 }`;
 
+// Reset Functions
 function resetSystemPrompt() {
     if (confirm('System-Prompt auf Standard zurücksetzen?')) {
         document.querySelector('textarea[name="system_prompt"]').value = defaultSystemPrompt;
@@ -616,6 +508,7 @@ function resetVisionUserPrompt() {
     }
 }
 
+// Update Models
 function updateModels() {
     var statusEl = document.getElementById('update-status');
     statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Lade Modelle...';
@@ -633,21 +526,21 @@ function updateModels() {
 
 // Prompt Library Functions
 function showProductPromptLibrary() {
-    document.getElementById('product-library-modal').style.display = 'block';
+    jQuery('#product-library-modal').modal('show');
     loadPromptLibraryInto('product', 'product-library-list');
 }
 
 function hideProductLibrary() {
-    document.getElementById('product-library-modal').style.display = 'none';
+    jQuery('#product-library-modal').modal('hide');
 }
 
 function showVisionPromptLibrary() {
-    document.getElementById('vision-library-modal').style.display = 'block';
+    jQuery('#vision-library-modal').modal('show');
     loadPromptLibraryInto('vision', 'vision-library-list');
 }
 
 function hideVisionLibrary() {
-    document.getElementById('vision-library-modal').style.display = 'none';
+    jQuery('#vision-library-modal').modal('hide');
 }
 
 function loadPromptLibraryInto(promptType, targetElementId) {
@@ -672,7 +565,7 @@ function displayPromptLibraryInto(prompts, promptType, targetElementId) {
         return;
     }
 
-    var html = '<table class="library-table"><thead><tr><th>Label</th><th>Beschreibung</th><th>Standard</th><th>Aktionen</th></tr></thead><tbody>';
+    var html = '<table class="library-table table table-striped table-bordered"><thead><tr><th>Label</th><th>Beschreibung</th><th>Standard</th><th>Aktionen</th></tr></thead><tbody>';
     prompts.forEach(function(prompt) {
         html += '<tr>';
         html += '<td><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
@@ -723,11 +616,11 @@ function showAddPromptDialog(promptType) {
     document.getElementById('new-prompt-description').value = '';
     document.getElementById('new-prompt-default').checked = false;
     document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType || 'product');
-    document.getElementById('add-prompt-modal').style.display = 'block';
+    jQuery('#add-prompt-modal').modal('show');
 }
 
 function hideAddPromptDialog() {
-    document.getElementById('add-prompt-modal').style.display = 'none';
+    jQuery('#add-prompt-modal').modal('hide');
 }
 
 function saveNewPrompt() {
@@ -749,7 +642,7 @@ function saveNewPrompt() {
         if (data.success) {
             alert('Prompt gespeichert!');
             hideAddPromptDialog();
-            if (document.getElementById('product-library-modal').style.display === 'block') {
+            if (jQuery('#product-library-modal').is(':visible')) {
                 loadPromptLibraryInto('product', 'product-library-list');
             } else {
                 loadPromptLibraryInto('vision', 'vision-library-list');
@@ -773,13 +666,13 @@ function editPrompt(promptId) {
             document.getElementById('edit-prompt-user').value = prompt.user_prompt;
             document.getElementById('edit-prompt-default').checked = prompt.is_default == 1;
             document.getElementById('edit-prompt-active').checked = prompt.is_active == 1;
-            document.getElementById('edit-prompt-modal').style.display = 'block';
+            jQuery('#edit-prompt-modal').modal('show');
         }
     });
 }
 
 function hideEditPromptDialog() {
-    document.getElementById('edit-prompt-modal').style.display = 'none';
+    jQuery('#edit-prompt-modal').modal('hide');
 }
 
 function saveEditedPrompt() {
@@ -801,7 +694,7 @@ function saveEditedPrompt() {
         if (data.success) {
             alert('Änderungen gespeichert!');
             hideEditPromptDialog();
-            if (document.getElementById('product-library-modal').style.display === 'block') {
+            if (jQuery('#product-library-modal').is(':visible')) {
                 loadPromptLibraryInto('product', 'product-library-list');
             } else {
                 loadPromptLibraryInto('vision', 'vision-library-list');
@@ -835,5 +728,3 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 </script>
-</body>
-</html>
