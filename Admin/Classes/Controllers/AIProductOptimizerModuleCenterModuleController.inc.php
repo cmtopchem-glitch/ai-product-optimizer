@@ -63,28 +63,29 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         // Prüfe auf Backup-Verzeichnisse im Modul-Pfad
         $backupWarning = $this->_checkForBackupDirectories();
 
-        // Prepare template data as associative array
-        $templateData = [
-            'pageTitle'          => $this->pageTitle,
-            'apiKey'             => $apiKey,
-            'projectId'          => $projectId,
-            'model'              => $model,
-            'availableModels'    => $availableModels,
-            'systemPrompt'       => $systemPrompt,
-            'userPrompt'         => $userPrompt,
-            'visionModel'        => $visionModel,
-            'visionSystemPrompt' => $visionSystemPrompt,
-            'visionUserPrompt'   => $visionUserPrompt,
-            'success'            => $success,
-            'error'              => $error,
-            'backupWarning'      => $backupWarning,
-        ];
+        // Template laden und Variablen zuweisen
+        $smarty = new Smarty();
+        $smarty->template_dir = DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/Admin/Templates/';
+        $smarty->compile_dir = DIR_FS_CATALOG . 'cache/smarty/';
 
-        // Use framework's _render() method instead of manual Smarty
-        $renderedContent = $this->_render('config_page.html', $templateData);
+        $smarty->assign('pageTitle', $this->pageTitle);
+        $smarty->assign('apiKey', $apiKey);
+        $smarty->assign('projectId', $projectId);
+        $smarty->assign('model', $model);
+        $smarty->assign('availableModels', $availableModels);
+        $smarty->assign('systemPrompt', $systemPrompt);
+        $smarty->assign('userPrompt', $userPrompt);
+        $smarty->assign('visionModel', $visionModel);
+        $smarty->assign('visionSystemPrompt', $visionSystemPrompt);
+        $smarty->assign('visionUserPrompt', $visionUserPrompt);
+        $smarty->assign('success', $success);
+        $smarty->assign('error', $error);
+        $smarty->assign('backupWarning', $backupWarning);
+
+        $html = $smarty->fetch('config_page.html');
 
         // Return proper response object for inline ModuleCenter rendering
-        return new AdminPageHttpControllerResponse($this->pageTitle, $renderedContent);
+        return new AdminPageHttpControllerResponse($this->pageTitle, $html);
     }
 
     /**
