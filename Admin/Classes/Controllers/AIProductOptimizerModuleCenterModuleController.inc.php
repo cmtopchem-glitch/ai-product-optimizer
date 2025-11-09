@@ -15,6 +15,7 @@ class AIProductOptimizerModuleCenterModuleController extends AbstractModuleCente
         $projectId = '';
         $model = 'gpt-4o-mini';
         $availableModelsJson = '';
+        $availableModels = [];
         $systemPrompt = '';
         $userPrompt = '';
         $visionModel = 'gpt-4o';
