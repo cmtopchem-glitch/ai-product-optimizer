@@ -13,6 +13,84 @@ if (!class_exists('PromptLibraryService')) {
 class PromptLibraryService
 {
     /**
+     * Stellt sicher, dass die Prompt-Library-Tabelle existiert
+     * Erstellt die Tabelle bei Bedarf automatisch
+     */
+    private static function ensureTableExists()
+    {
+        // Prüfe ob Tabelle existiert
+        $checkQuery = "SHOW TABLES LIKE 'rz_ai_prompt_library'";
+        $result = xtc_db_query($checkQuery);
+
+        if (xtc_db_num_rows($result) > 0) {
+            return; // Tabelle existiert bereits
+        }
+
+        // Tabelle existiert nicht - erstelle sie
+        $createTableQuery = "CREATE TABLE IF NOT EXISTS `rz_ai_prompt_library` (
+          `prompt_id` int(11) NOT NULL AUTO_INCREMENT,
+          `prompt_type` varchar(20) NOT NULL DEFAULT 'product' COMMENT 'Typ: product oder vision',
+          `prompt_label` varchar(255) NOT NULL COMMENT 'Benutzerdefiniertes Label/Name für den Prompt',
+          `prompt_description` text DEFAULT NULL COMMENT 'Optionale Beschreibung des Prompts',
+          `system_prompt` text NOT NULL COMMENT 'System Prompt für OpenAI',
+          `user_prompt` longtext NOT NULL COMMENT 'User Prompt Template mit Platzhaltern',
+          `is_default` tinyint(1) DEFAULT 0 COMMENT 'Flag ob dies der Standard-Prompt ist',
+          `is_active` tinyint(1) DEFAULT 1 COMMENT 'Flag ob der Prompt aktiv/sichtbar ist',
+          `created_at` datetime NOT NULL COMMENT 'Erstellungsdatum',
+          `updated_at` datetime DEFAULT NULL COMMENT 'Letztes Änderungsdatum',
+          `usage_count` int(11) DEFAULT 0 COMMENT 'Anzahl der Verwendungen',
+          `last_used_at` datetime DEFAULT NULL COMMENT 'Letzter Verwendungszeitpunkt',
+          PRIMARY KEY (`prompt_id`),
+          KEY `idx_prompt_type` (`prompt_type`),
+          KEY `idx_is_active` (`is_active`),
+          KEY `idx_is_default` (`is_default`),
+          KEY `idx_usage_count` (`usage_count`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Prompt-Bibliothek für AI Product Optimizer'";
+
+        xtc_db_query($createTableQuery);
+
+        // Füge Standard-Prompts ein
+        self::insertDefaultPrompts();
+    }
+
+    /**
+     * Fügt die Standard-Prompts ein, falls noch keine vorhanden sind
+     */
+    private static function insertDefaultPrompts()
+    {
+        // Prüfen ob bereits Prompts vorhanden sind
+        $result = xtc_db_query("SELECT COUNT(*) as count FROM `rz_ai_prompt_library`");
+        $row = xtc_db_fetch_array($result);
+
+        if ($row['count'] > 0) {
+            return; // Bereits Prompts vorhanden
+        }
+
+        // Standard-Prompts aus default_prompts.sql laden und ausführen
+        $sqlFile = DIR_FS_CATALOG . 'GXModules/REDOzone/AIProductOptimizer/default_prompts.sql';
+
+        if (file_exists($sqlFile)) {
+            $sql = file_get_contents($sqlFile);
+
+            // SQL in einzelne Statements aufteilen und ausführen
+            $statements = array_filter(
+                array_map('trim', explode(';', $sql)),
+                function($statement) {
+                    return !empty($statement) &&
+                           strpos($statement, '--') !== 0 &&
+                           !preg_match('/^--/', $statement);
+                }
+            );
+
+            foreach ($statements as $statement) {
+                if (!empty($statement)) {
+                    xtc_db_query($statement);
+                }
+            }
+        }
+    }
+
+    /**
      * Holt alle aktiven Prompts aus der Bibliothek
      * @param bool $activeOnly Nur aktive Prompts
      * @param string $promptType Filter nach Typ: 'product', 'vision' oder leer für alle
@@ -20,6 +98,9 @@ class PromptLibraryService
      */
     public static function getAllPrompts($activeOnly = true, $promptType = '')
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         $query = "SELECT prompt_id, prompt_type, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
@@ -69,6 +150,9 @@ class PromptLibraryService
      */
     public static function getPromptById($promptId)
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         $query = "SELECT prompt_id, prompt_type, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
@@ -103,6 +187,9 @@ class PromptLibraryService
      */
     public static function getDefaultPrompt()
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         $query = "SELECT prompt_id, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
@@ -143,6 +230,9 @@ class PromptLibraryService
      */
     public static function createPrompt($label, $systemPrompt, $userPrompt, $description = '', $isDefault = false, $promptType = 'product')
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         // Wenn dieser Prompt als Standard markiert wird, entferne Default-Flag von allen anderen desselben Typs
         if ($isDefault) {
             self::clearDefaultFlag($promptType);
@@ -292,6 +382,9 @@ class PromptLibraryService
      */
     public static function hasPrompts()
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         $query = "SELECT COUNT(*) as count FROM rz_ai_prompt_library";
         $result = xtc_db_query($query);
         $row = xtc_db_fetch_array($result);
