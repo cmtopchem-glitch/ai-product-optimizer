@@ -78,6 +78,15 @@
             overflow: auto;
         }
 
+        /* Edit Modal sollte über Library Modal liegen */
+        .ai-optimizer-modal#edit-prompt-modal {
+            z-index: 10100;
+        }
+
+        .ai-optimizer-modal#add-prompt-modal {
+            z-index: 10100;
+        }
+
         .ai-optimizer-modal.show {
             display: block !important;
         }
@@ -153,6 +162,29 @@
             background: #e9ecef;
             padding: 2px 6px;
             border-radius: 3px;
+        }
+
+        /* Password toggle styling */
+        .ai-product-optimizer-config .password-wrapper {
+            position: relative;
+        }
+
+        .ai-product-optimizer-config .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            z-index: 10;
+        }
+
+        .ai-product-optimizer-config .password-toggle:hover {
+            color: #333;
+        }
+
+        .ai-product-optimizer-config .password-wrapper input {
+            padding-right: 40px;
         }
 
         .ai-product-optimizer-config .library-section {
@@ -253,7 +285,10 @@
                 <div class="form-group">
                     <label class="col-sm-3 control-label">OpenAI API Key *</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" name="openai_key" id="openai-key-input" value="{$apiKey|escape}" required>
+                            <i class="fa fa-eye password-toggle" id="toggle-api-key" onclick="togglePasswordVisibility('openai-key-input', 'toggle-api-key')" title="Anzeigen/Verbergen"></i>
+                        </div>
                         <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
                     </div>
                 </div>
@@ -261,7 +296,10 @@
                 <div class="form-group">
                     <label class="col-sm-3 control-label">OpenAI Project ID (optional)</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" name="project_id" id="project-id-input" value="{$projectId|escape}" placeholder="proj_...">
+                            <i class="fa fa-eye password-toggle" id="toggle-project-id" onclick="togglePasswordVisibility('project-id-input', 'toggle-project-id')" title="Anzeigen/Verbergen"></i>
+                        </div>
                         <p class="help-block">Project ID für OpenAI Project-Keys. Format: proj_xxxxxxxxxx</p>
                     </div>
                 </div>
@@ -500,11 +538,17 @@
                         <label>
                             <input type="checkbox" id="edit-prompt-default"> Als Standard-Prompt setzen
                         </label>
+                        <p class="help-block" style="margin-left: 20px; margin-top: 5px; font-size: 12px;">
+                            <i class="fa fa-info-circle"></i> Der Standard-Prompt wird automatisch verwendet. Es kann nur einen Standard-Prompt pro Typ geben.
+                        </p>
                     </div>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" id="edit-prompt-active" checked> Aktiv
                         </label>
+                        <p class="help-block" style="margin-left: 20px; margin-top: 5px; font-size: 12px;">
+                            <i class="fa fa-info-circle"></i> Inaktive Prompts werden in der Bibliothek ausgeblendet.
+                        </p>
                     </div>
                     <p id="edit-prompt-status" class="help-block"></p>
                 </div>
@@ -631,6 +675,22 @@ function resetVisionSystemPrompt() {
 function resetVisionUserPrompt() {
     if (confirm('Vision User-Prompt auf Standard zurücksetzen?')) {
         document.querySelector('textarea[name="vision_user_prompt"]').value = defaultVisionUserPrompt;
+    }
+}
+
+// Password visibility toggle
+function togglePasswordVisibility(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
     }
 }
 
@@ -802,6 +862,10 @@ function hideEditPromptDialog() {
 }
 
 function saveEditedPrompt() {
+    var statusEl = document.getElementById('edit-prompt-status');
+    statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Speichere...';
+    statusEl.style.color = '#337ab7';
+
     var formData = new FormData();
     formData.append('prompt_id', document.getElementById('edit-prompt-id').value);
     formData.append('label', document.getElementById('edit-prompt-label').value);
@@ -815,17 +879,33 @@ function saveEditedPrompt() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP-Fehler: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            alert('Änderungen gespeichert!');
-            hideEditPromptDialog();
-            if (jQuery('#product-library-modal').is(':visible')) {
-                loadPromptLibraryInto('product', 'product-library-list');
-            } else {
-                loadPromptLibraryInto('vision', 'vision-library-list');
-            }
+            statusEl.innerHTML = '<i class="fa fa-check"></i> Erfolgreich gespeichert!';
+            statusEl.style.color = '#5cb85c';
+            setTimeout(function() {
+                hideEditPromptDialog();
+                if (jQuery('#product-library-modal').is(':visible')) {
+                    loadPromptLibraryInto('product', 'product-library-list');
+                } else {
+                    loadPromptLibraryInto('vision', 'vision-library-list');
+                }
+            }, 1000);
+        } else {
+            statusEl.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Fehler: ' + (data.error || 'Unbekannter Fehler');
+            statusEl.style.color = '#d9534f';
         }
+    })
+    .catch(error => {
+        statusEl.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Fehler beim Speichern: ' + error.message;
+        statusEl.style.color = '#d9534f';
+        console.error('Error saving prompt:', error);
     });
 }
 
