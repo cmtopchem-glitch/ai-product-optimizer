@@ -170,9 +170,7 @@ private function getDefaultUserPrompt()
            "✓ Mindestens 5-7 <strong> Hervorhebungen für Keywords\n" .
            "✓ Platzhalter [[MEDIA_TAG_X]] EXAKT übernehmen\n" .
            "✓ meta_keywords und search_keywords mit mindestens 8 Begriffen gefüllt\n" .
-           "✓ ALLE Texte MÜSSEN in Zielsprache {LANGUAGE} sein!\n" .
-           "✓ KEINE deutschen Texte wenn {LANGUAGE} nicht German ist!\n" .
-           "✓ KEINE englischen Texte wenn {LANGUAGE} nicht English ist!\n\n" .
+           "✓ ALLE Texte MÜSSEN komplett in {LANGUAGE} sein - keine Mischung mit anderen Sprachen!\n\n" .
            "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
            '  "product_name": "VOLLSTÄNDIG ÜBERSETZTER Produktname in {LANGUAGE} (NUR Marken/Nummern beibehalten)",'."\n" .
