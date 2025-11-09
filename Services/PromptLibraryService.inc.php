@@ -101,6 +101,9 @@ class PromptLibraryService
         // Stelle sicher, dass die Tabelle existiert
         self::ensureTableExists();
 
+        // Sicherheitsprüfung: Stelle sicher, dass nur ein Standard-Prompt pro Typ existiert
+        self::ensureOnlyOneDefaultPerType();
+
         $query = "SELECT prompt_id, prompt_type, prompt_label, prompt_description, system_prompt,
                   user_prompt, is_default, is_active, created_at, updated_at,
                   usage_count, last_used_at
@@ -343,6 +346,45 @@ class PromptLibraryService
             $query .= " WHERE prompt_type = '" . xtc_db_input($promptType) . "'";
         }
         xtc_db_query($query);
+    }
+
+    /**
+     * Stellt sicher, dass nur ein Standard-Prompt pro Typ existiert
+     * Wenn mehrere gefunden werden, wird nur der zuletzt aktualisierte beibehalten
+     */
+    private static function ensureOnlyOneDefaultPerType()
+    {
+        // Prüfe für jeden Typ separat
+        $types = ['product', 'vision'];
+
+        foreach ($types as $type) {
+            // Finde alle Prompts, die als Standard markiert sind
+            $query = "SELECT prompt_id, updated_at
+                      FROM rz_ai_prompt_library
+                      WHERE prompt_type = '" . xtc_db_input($type) . "'
+                      AND is_default = 1
+                      ORDER BY updated_at DESC, prompt_id DESC";
+
+            $result = xtc_db_query($query);
+            $defaultPrompts = [];
+
+            while ($row = xtc_db_fetch_array($result)) {
+                $defaultPrompts[] = $row['prompt_id'];
+            }
+
+            // Wenn mehr als ein Standard-Prompt existiert, behalte nur den ersten (neuesten)
+            if (count($defaultPrompts) > 1) {
+                $keepPromptId = array_shift($defaultPrompts); // Ersten (neuesten) behalten
+
+                // Alle anderen auf nicht-standard setzen
+                foreach ($defaultPrompts as $promptId) {
+                    $updateQuery = "UPDATE rz_ai_prompt_library
+                                   SET is_default = 0
+                                   WHERE prompt_id = '" . (int)$promptId . "'";
+                    xtc_db_query($updateQuery);
+                }
+            }
+        }
     }
 
     /**
