@@ -13,10 +13,49 @@ if (!class_exists('BackupService')) {
 class BackupService
 {
     /**
+     * Stellt sicher, dass die Backup-Tabelle existiert
+     * Erstellt die Tabelle bei Bedarf automatisch
+     */
+    private static function ensureTableExists()
+    {
+        // Prüfe ob Tabelle existiert
+        $checkQuery = "SHOW TABLES LIKE 'rz_ai_optimizer_backup'";
+        $result = xtc_db_query($checkQuery);
+
+        if (xtc_db_num_rows($result) > 0) {
+            return; // Tabelle existiert bereits
+        }
+
+        // Tabelle existiert nicht - erstelle sie
+        $createTableQuery = "CREATE TABLE IF NOT EXISTS `rz_ai_optimizer_backup` (
+          `backup_id` int(11) NOT NULL AUTO_INCREMENT,
+          `products_id` int(11) NOT NULL COMMENT 'Produkt-ID aus products Tabelle',
+          `languages_id` int(11) NOT NULL COMMENT 'Sprach-ID aus languages Tabelle',
+          `products_description` text DEFAULT NULL COMMENT 'Gesicherte Produktbeschreibung',
+          `products_meta_title` varchar(255) DEFAULT NULL COMMENT 'Gesicherter Meta-Titel',
+          `products_meta_description` text DEFAULT NULL COMMENT 'Gesicherte Meta-Description',
+          `products_meta_keywords` text DEFAULT NULL COMMENT 'Gesicherte Meta-Keywords',
+          `products_keywords` text DEFAULT NULL COMMENT 'Gesicherte Shop-Suchworte',
+          `backup_date` datetime NOT NULL COMMENT 'Zeitpunkt der Backup-Erstellung',
+          `restored` tinyint(1) DEFAULT 0 COMMENT 'Flag ob Backup bereits wiederhergestellt wurde',
+          PRIMARY KEY (`backup_id`),
+          KEY `idx_products_id` (`products_id`),
+          KEY `idx_backup_date` (`backup_date`),
+          KEY `idx_restored` (`restored`),
+          KEY `idx_product_restored` (`products_id`, `restored`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Backup-Tabelle für AI Product Optimizer'";
+
+        xtc_db_query($createTableQuery);
+    }
+
+    /**
      * Erstellt ein Backup der aktuellen Produkttexte
      */
     public static function createBackup($productId)
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         // Hole alle aktiven Sprachen
         $query = "SELECT languages_id FROM languages WHERE status = 1";
         $result = xtc_db_query($query);
@@ -65,6 +104,9 @@ class BackupService
      */
     public static function restoreBackup($productId)
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         // Hole das neueste Backup für dieses Produkt
         $query = "SELECT backup_id, languages_id, products_description, products_meta_title, 
                   products_meta_description, products_meta_keywords, products_keywords
@@ -111,13 +153,16 @@ class BackupService
      */
     public static function hasBackup($productId)
     {
-        $query = "SELECT COUNT(*) as count 
-                  FROM rz_ai_optimizer_backup 
-                  WHERE products_id = '" . (int)$productId . "' 
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
+        $query = "SELECT COUNT(*) as count
+                  FROM rz_ai_optimizer_backup
+                  WHERE products_id = '" . (int)$productId . "'
                   AND restored = 0";
         $result = xtc_db_query($query);
         $row = xtc_db_fetch_array($result);
-        
+
         return $row['count'] > 0;
     }
     
@@ -137,6 +182,9 @@ class BackupService
      */
     public static function getAllBackups($productId)
     {
+        // Stelle sicher, dass die Tabelle existiert
+        self::ensureTableExists();
+
         $query = "SELECT
                     MIN(backup_id) as backup_id,
                     backup_date,
