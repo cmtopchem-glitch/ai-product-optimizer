@@ -27,6 +27,76 @@
             margin-right: 5px;
         }
 
+        /* Custom Modal Styles - komplett ohne Bootstrap JavaScript */
+        .ai-optimizer-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+
+        .ai-optimizer-modal.show {
+            display: block !important;
+        }
+
+        .ai-optimizer-modal-dialog {
+            position: relative;
+            margin: 50px auto;
+            max-width: 900px;
+        }
+
+        .ai-optimizer-modal-content {
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .ai-optimizer-modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #e5e5e5;
+            position: relative;
+        }
+
+        .ai-optimizer-modal-body {
+            padding: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .ai-optimizer-modal-footer {
+            padding: 15px;
+            border-top: 1px solid #e5e5e5;
+            text-align: right;
+        }
+
+        .ai-optimizer-modal-title {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .ai-optimizer-modal .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 21px;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            opacity: 0.2;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .ai-optimizer-modal .close:hover {
+            opacity: 0.5;
+        }
+
         .ai-product-optimizer-config textarea.form-control {
             font-family: monospace;
             font-size: 13px;
@@ -116,20 +186,20 @@
 
     <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post" class="form-horizontal">
 
-        <!-- Bootstrap 3 Tab Navigation -->
+        <!-- Tab Navigation (ohne Bootstrap JavaScript) -->
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="active">
-                <a href="#tab-general" aria-controls="tab-general" role="tab" data-toggle="tab">
+                <a href="#tab-general" onclick="aiOptimizerSwitchTab('tab-general'); return false;">
                     <i class="fa fa-cog"></i> Grundeinstellungen
                 </a>
             </li>
             <li role="presentation">
-                <a href="#tab-product-prompts" aria-controls="tab-product-prompts" role="tab" data-toggle="tab">
+                <a href="#tab-product-prompts" onclick="aiOptimizerSwitchTab('tab-product-prompts'); return false;">
                     <i class="fa fa-file-text"></i> Produkt Prompts
                 </a>
             </li>
             <li role="presentation">
-                <a href="#tab-vision-prompts" aria-controls="tab-vision-prompts" role="tab" data-toggle="tab">
+                <a href="#tab-vision-prompts" onclick="aiOptimizerSwitchTab('tab-vision-prompts'); return false;">
                     <i class="fa fa-image"></i> Bilder Prompts
                 </a>
             </li>
@@ -317,16 +387,16 @@
     </form>
 
     <!-- Bootstrap 3 Modal: Add Prompt -->
-    <div class="modal fade" id="add-prompt-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="add-prompt-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideAddPromptDialog()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div class="form-group">
                         <label>Label/Name *</label>
                         <input type="text" class="form-control" id="new-prompt-label">
@@ -350,8 +420,8 @@
                     </div>
                     <p id="save-prompt-status" class="help-block"></p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideAddPromptDialog()">Abbrechen</button>
                     <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">
                         <i class="fa fa-save"></i> Prompt speichern
                     </button>
@@ -361,16 +431,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Edit Prompt -->
-    <div class="modal fade" id="edit-prompt-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="edit-prompt-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideEditPromptDialog()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-edit"></i> Prompt bearbeiten</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-edit"></i> Prompt bearbeiten</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <input type="hidden" id="edit-prompt-id">
                     <div class="form-group">
                         <label>Label/Name *</label>
@@ -400,8 +470,8 @@
                     </div>
                     <p id="edit-prompt-status" class="help-block"></p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideEditPromptDialog()">Abbrechen</button>
                     <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">
                         <i class="fa fa-save"></i> Änderungen speichern
                     </button>
@@ -411,16 +481,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Product Prompt Library -->
-    <div class="modal fade" id="product-library-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="product-library-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideProductLibrary()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div style="margin-bottom: 20px;">
                         <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">
                             <i class="fa fa-plus"></i> Neuen Prompt erstellen
@@ -428,8 +498,8 @@
                     </div>
                     <div id="product-library-list"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideProductLibrary()">
                         <i class="fa fa-times"></i> Schließen
                     </button>
                 </div>
@@ -438,16 +508,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Vision Prompt Library -->
-    <div class="modal fade" id="vision-library-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="vision-library-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideVisionLibrary()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div style="margin-bottom: 20px;">
                         <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">
                             <i class="fa fa-plus"></i> Neuen Prompt erstellen
@@ -455,8 +525,8 @@
                     </div>
                     <div id="vision-library-list"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideVisionLibrary()">
                         <i class="fa fa-times"></i> Schließen
                     </button>
                 </div>
@@ -746,41 +816,87 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Explicit Tab Initialization for Bootstrap 3
+// =============================================================================
+// AI Product Optimizer - Custom Tab & Modal Functions (ohne Bootstrap)
+// =============================================================================
+
+// Tab-Switching Funktion
+function aiOptimizerSwitchTab(tabId) {
+    console.log('Switching to tab:', tabId);
+
+    // Alle Tabs und Panes deaktivieren
+    jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
+    jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
+
+    // Aktiven Tab und Pane aktivieren
+    jQuery('.ai-product-optimizer-config .nav-tabs a[href="#' + tabId + '"]').parent().addClass('active');
+    jQuery('#' + tabId).addClass('active').show();
+}
+
+// Modal öffnen
+function aiOptimizerShowModal(modalId) {
+    console.log('Opening modal:', modalId);
+    jQuery('#' + modalId).addClass('show').fadeIn(200);
+}
+
+// Modal schließen
+function aiOptimizerHideModal(modalId) {
+    console.log('Closing modal:', modalId);
+    jQuery('#' + modalId).removeClass('show').fadeOut(200);
+}
+
+// Prompt Library Modal öffnen
+function showProductPromptLibrary() {
+    aiOptimizerShowModal('product-library-modal');
+    loadPromptLibraryInto('product', 'product-library-list');
+}
+
+function showVisionPromptLibrary() {
+    aiOptimizerShowModal('vision-library-modal');
+    loadPromptLibraryInto('vision', 'vision-library-list');
+}
+
+function hideProductLibrary() {
+    aiOptimizerHideModal('product-library-modal');
+}
+
+function hideVisionLibrary() {
+    aiOptimizerHideModal('vision-library-modal');
+}
+
+function showAddPromptDialog(promptType) {
+    document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType);
+    document.getElementById('new-prompt-label').value = '';
+    document.getElementById('new-prompt-description').value = '';
+    document.getElementById('new-prompt-system').value = '';
+    document.getElementById('new-prompt-user').value = '';
+    document.getElementById('new-prompt-default').checked = false;
+    aiOptimizerShowModal('add-prompt-modal');
+}
+
+function hideAddPromptDialog() {
+    aiOptimizerHideModal('add-prompt-modal');
+}
+
+function hideEditPromptDialog() {
+    aiOptimizerHideModal('edit-prompt-modal');
+}
+
+// Initialization
 jQuery(document).ready(function() {
-    console.log('AI Product Optimizer: Initializing...');
-    console.log('jQuery available:', typeof jQuery !== 'undefined');
-    console.log('Bootstrap available:', typeof jQuery.fn.modal !== 'undefined');
+    console.log('AI Product Optimizer: Initializing (ohne Bootstrap)...');
 
-    // Check if tabs exist
-    var tabs = jQuery('.ai-product-optimizer-config .nav-tabs a');
-    console.log('Found tabs:', tabs.length);
-
-    // Simple manual tab switching (no Bootstrap dependency)
-    jQuery('.ai-product-optimizer-config .nav-tabs a').on('click', function(e) {
-        e.preventDefault();
-
-        console.log('Tab clicked:', jQuery(this).text());
-
-        // Remove active from all tabs and panes
-        jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
-        jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
-
-        // Add active to clicked tab
-        jQuery(this).parent().addClass('active');
-
-        // Show corresponding pane
-        var target = jQuery(this).attr('href');
-        console.log('Showing pane:', target);
-        jQuery(target).addClass('active').show();
-
-        return false;
-    });
-
-    // Make sure first tab is visible on load
+    // Erste Tab anzeigen
     jQuery('.ai-product-optimizer-config .tab-pane').hide();
     jQuery('.ai-product-optimizer-config .tab-pane.active').show();
 
-    console.log('AI Product Optimizer: Tabs initialized successfully');
+    // Modal schließen bei Klick außerhalb
+    jQuery('.ai-optimizer-modal').on('click', function(e) {
+        if (jQuery(e.target).hasClass('ai-optimizer-modal')) {
+            jQuery(this).removeClass('show').fadeOut(200);
+        }
+    });
+
+    console.log('AI Product Optimizer: Initialized successfully!');
 });
 </script>
