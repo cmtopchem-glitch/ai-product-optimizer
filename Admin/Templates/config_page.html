@@ -9,6 +9,19 @@
             padding-top: 20px;
         }
 
+        /* Ensure tabs work properly */
+        .ai-product-optimizer-config .tab-pane {
+            display: none;
+        }
+
+        .ai-product-optimizer-config .tab-pane.active {
+            display: block;
+        }
+
+        .ai-product-optimizer-config .nav-tabs {
+            margin-bottom: 20px;
+        }
+
         .ai-product-optimizer-config textarea.form-control {
             font-family: monospace;
             font-size: 13px;
@@ -727,4 +740,31 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Explicit Tab Initialization for Bootstrap 3
+jQuery(document).ready(function() {
+    // Manually initialize tab switching if data-toggle doesn't work
+    jQuery('.nav-tabs a[data-toggle="tab"]').on('click', function (e) {
+        e.preventDefault();
+        jQuery(this).tab('show');
+    });
+
+    // Alternative: If Bootstrap tab() is not available, use manual show/hide
+    jQuery('.nav-tabs a').on('click', function(e) {
+        e.preventDefault();
+
+        // Remove active from all tabs and panes
+        jQuery('.nav-tabs li').removeClass('active');
+        jQuery('.tab-pane').removeClass('active');
+
+        // Add active to clicked tab
+        jQuery(this).parent().addClass('active');
+
+        // Show corresponding pane
+        var target = jQuery(this).attr('href');
+        jQuery(target).addClass('active');
+    });
+
+    console.log('AI Product Optimizer: Tabs initialized');
+});
 </script>
