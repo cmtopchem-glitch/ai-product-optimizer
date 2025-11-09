@@ -20,6 +20,128 @@
 
         .ai-product-optimizer-config .nav-tabs {
             margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            list-style: none;
+            padding: 0;
+        }
+
+        .ai-product-optimizer-config .nav-tabs li {
+            display: inline-block;
+            margin-bottom: -2px;
+        }
+
+        .ai-product-optimizer-config .nav-tabs li a {
+            display: block;
+            padding: 10px 20px;
+            margin-right: 2px;
+            text-decoration: none;
+            color: #555;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: 2px solid #ddd;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.2s;
+        }
+
+        .ai-product-optimizer-config .nav-tabs li a:hover {
+            background-color: #e9e9e9;
+            border-bottom-color: #ddd;
+        }
+
+        .ai-product-optimizer-config .nav-tabs li.active a {
+            color: #000;
+            background-color: #fff;
+            border-bottom-color: #fff;
+            font-weight: bold;
+            cursor: default;
+        }
+
+        .ai-product-optimizer-config .nav-tabs li a i {
+            margin-right: 5px;
+        }
+
+        /* Ensure buttons have proper spacing for icon and text */
+        .ai-product-optimizer-config .btn i {
+            margin-right: 5px;
+        }
+
+        /* Custom Modal Styles - komplett ohne Bootstrap JavaScript */
+        .ai-optimizer-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+
+        /* Edit Modal sollte über Library Modal liegen */
+        .ai-optimizer-modal#edit-prompt-modal {
+            z-index: 10100;
+        }
+
+        .ai-optimizer-modal#add-prompt-modal {
+            z-index: 10100;
+        }
+
+        .ai-optimizer-modal.show {
+            display: block !important;
+        }
+
+        .ai-optimizer-modal-dialog {
+            position: relative;
+            margin: 50px auto;
+            max-width: 900px;
+        }
+
+        .ai-optimizer-modal-content {
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .ai-optimizer-modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #e5e5e5;
+            position: relative;
+        }
+
+        .ai-optimizer-modal-body {
+            padding: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .ai-optimizer-modal-footer {
+            padding: 15px;
+            border-top: 1px solid #e5e5e5;
+            text-align: right;
+        }
+
+        .ai-optimizer-modal-title {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .ai-optimizer-modal .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 21px;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            opacity: 0.2;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .ai-optimizer-modal .close:hover {
+            opacity: 0.5;
         }
 
         /* Ensure buttons have proper spacing for icon and text */
@@ -45,6 +167,29 @@
             background: #e9ecef;
             padding: 2px 6px;
             border-radius: 3px;
+        }
+
+        /* Password toggle styling */
+        .ai-product-optimizer-config .password-wrapper {
+            position: relative;
+        }
+
+        .ai-product-optimizer-config .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            z-index: 10;
+        }
+
+        .ai-product-optimizer-config .password-toggle:hover {
+            color: #333;
+        }
+
+        .ai-product-optimizer-config .password-wrapper input {
+            padding-right: 40px;
         }
 
         .ai-product-optimizer-config .library-section {
@@ -116,20 +261,20 @@
 
     <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post" class="form-horizontal">
 
-        <!-- Bootstrap 3 Tab Navigation -->
+        <!-- Tab Navigation (ohne Bootstrap JavaScript) -->
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="active">
-                <a href="#tab-general" aria-controls="tab-general" role="tab" data-toggle="tab">
+                <a href="#tab-general" onclick="aiOptimizerSwitchTab('tab-general'); return false;">
                     <i class="fa fa-cog"></i> Grundeinstellungen
                 </a>
             </li>
             <li role="presentation">
-                <a href="#tab-product-prompts" aria-controls="tab-product-prompts" role="tab" data-toggle="tab">
+                <a href="#tab-product-prompts" onclick="aiOptimizerSwitchTab('tab-product-prompts'); return false;">
                     <i class="fa fa-file-text"></i> Produkt Prompts
                 </a>
             </li>
             <li role="presentation">
-                <a href="#tab-vision-prompts" aria-controls="tab-vision-prompts" role="tab" data-toggle="tab">
+                <a href="#tab-vision-prompts" onclick="aiOptimizerSwitchTab('tab-vision-prompts'); return false;">
                     <i class="fa fa-image"></i> Bilder Prompts
                 </a>
             </li>
@@ -145,7 +290,10 @@
                 <div class="form-group">
                     <label class="col-sm-3 control-label">OpenAI API Key *</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" name="openai_key" id="openai-key-input" value="{$apiKey|escape}" required>
+                            <i class="fa fa-eye password-toggle" id="toggle-api-key" onclick="togglePasswordVisibility('openai-key-input', 'toggle-api-key')" title="Anzeigen/Verbergen"></i>
+                        </div>
                         <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
                     </div>
                 </div>
@@ -153,7 +301,10 @@
                 <div class="form-group">
                     <label class="col-sm-3 control-label">OpenAI Project ID (optional)</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" name="project_id" id="project-id-input" value="{$projectId|escape}" placeholder="proj_...">
+                            <i class="fa fa-eye password-toggle" id="toggle-project-id" onclick="togglePasswordVisibility('project-id-input', 'toggle-project-id')" title="Anzeigen/Verbergen"></i>
+                        </div>
                         <p class="help-block">Project ID für OpenAI Project-Keys. Format: proj_xxxxxxxxxx</p>
                     </div>
                 </div>
@@ -317,16 +468,16 @@
     </form>
 
     <!-- Bootstrap 3 Modal: Add Prompt -->
-    <div class="modal fade" id="add-prompt-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="add-prompt-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideAddPromptDialog()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div class="form-group">
                         <label>Label/Name *</label>
                         <input type="text" class="form-control" id="new-prompt-label">
@@ -350,8 +501,8 @@
                     </div>
                     <p id="save-prompt-status" class="help-block"></p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideAddPromptDialog()">Abbrechen</button>
                     <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">
                         <i class="fa fa-save"></i> Prompt speichern
                     </button>
@@ -361,16 +512,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Edit Prompt -->
-    <div class="modal fade" id="edit-prompt-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="edit-prompt-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideEditPromptDialog()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-edit"></i> Prompt bearbeiten</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-edit"></i> Prompt bearbeiten</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <input type="hidden" id="edit-prompt-id">
                     <div class="form-group">
                         <label>Label/Name *</label>
@@ -392,16 +543,22 @@
                         <label>
                             <input type="checkbox" id="edit-prompt-default"> Als Standard-Prompt setzen
                         </label>
+                        <p class="help-block" style="margin-left: 20px; margin-top: 5px; font-size: 12px;">
+                            <i class="fa fa-info-circle"></i> Der Standard-Prompt wird automatisch verwendet. Es kann nur einen Standard-Prompt pro Typ geben.
+                        </p>
                     </div>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" id="edit-prompt-active" checked> Aktiv
                         </label>
+                        <p class="help-block" style="margin-left: 20px; margin-top: 5px; font-size: 12px;">
+                            <i class="fa fa-info-circle"></i> Inaktive Prompts werden in der Bibliothek ausgeblendet.
+                        </p>
                     </div>
                     <p id="edit-prompt-status" class="help-block"></p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideEditPromptDialog()">Abbrechen</button>
                     <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">
                         <i class="fa fa-save"></i> Änderungen speichern
                     </button>
@@ -411,16 +568,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Product Prompt Library -->
-    <div class="modal fade" id="product-library-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="product-library-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideProductLibrary()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div style="margin-bottom: 20px;">
                         <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">
                             <i class="fa fa-plus"></i> Neuen Prompt erstellen
@@ -428,8 +585,8 @@
                     </div>
                     <div id="product-library-list"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideProductLibrary()">
                         <i class="fa fa-times"></i> Schließen
                     </button>
                 </div>
@@ -438,16 +595,16 @@
     </div>
 
     <!-- Bootstrap 3 Modal: Vision Prompt Library -->
-    <div class="modal fade" id="vision-library-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div class="ai-optimizer-modal" id="vision-library-modal" tabindex="-1" role="dialog">
+        <div class="ai-optimizer-modal-dialog" role="document">
+            <div class="ai-optimizer-modal-content">
+                <div class="ai-optimizer-modal-header">
+                    <button type="button" class="close" onclick="hideVisionLibrary()" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
+                    <h4 class="ai-optimizer-modal-title"><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
                 </div>
-                <div class="modal-body">
+                <div class="ai-optimizer-modal-body">
                     <div style="margin-bottom: 20px;">
                         <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">
                             <i class="fa fa-plus"></i> Neuen Prompt erstellen
@@ -455,8 +612,8 @@
                     </div>
                     <div id="vision-library-list"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                <div class="ai-optimizer-modal-footer">
+                    <button type="button" class="btn btn-default" onclick="hideVisionLibrary()">
                         <i class="fa fa-times"></i> Schließen
                     </button>
                 </div>
@@ -526,6 +683,22 @@ function resetVisionUserPrompt() {
     }
 }
 
+// Password visibility toggle
+function togglePasswordVisibility(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
 // Update Models
 function updateModels() {
     var statusEl = document.getElementById('update-status');
@@ -544,21 +717,21 @@ function updateModels() {
 
 // Prompt Library Functions
 function showProductPromptLibrary() {
-    jQuery('#product-library-modal').modal('show');
+    aiOptimizerShowModal('product-library-modal');
     loadPromptLibraryInto('product', 'product-library-list');
 }
 
 function hideProductLibrary() {
-    jQuery('#product-library-modal').modal('hide');
+    aiOptimizerHideModal('product-library-modal');
 }
 
 function showVisionPromptLibrary() {
-    jQuery('#vision-library-modal').modal('show');
+    aiOptimizerShowModal('vision-library-modal');
     loadPromptLibraryInto('vision', 'vision-library-list');
 }
 
 function hideVisionLibrary() {
-    jQuery('#vision-library-modal').modal('hide');
+    aiOptimizerHideModal('vision-library-modal');
 }
 
 function loadPromptLibraryInto(promptType, targetElementId) {
@@ -634,11 +807,11 @@ function showAddPromptDialog(promptType) {
     document.getElementById('new-prompt-description').value = '';
     document.getElementById('new-prompt-default').checked = false;
     document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType || 'product');
-    jQuery('#add-prompt-modal').modal('show');
+    aiOptimizerShowModal('add-prompt-modal');
 }
 
 function hideAddPromptDialog() {
-    jQuery('#add-prompt-modal').modal('hide');
+    aiOptimizerHideModal('add-prompt-modal');
 }
 
 function saveNewPrompt() {
@@ -684,16 +857,20 @@ function editPrompt(promptId) {
             document.getElementById('edit-prompt-user').value = prompt.user_prompt;
             document.getElementById('edit-prompt-default').checked = prompt.is_default == 1;
             document.getElementById('edit-prompt-active').checked = prompt.is_active == 1;
-            jQuery('#edit-prompt-modal').modal('show');
+            aiOptimizerShowModal('edit-prompt-modal');
         }
     });
 }
 
 function hideEditPromptDialog() {
-    jQuery('#edit-prompt-modal').modal('hide');
+    aiOptimizerHideModal('edit-prompt-modal');
 }
 
 function saveEditedPrompt() {
+    var statusEl = document.getElementById('edit-prompt-status');
+    statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Speichere...';
+    statusEl.style.color = '#337ab7';
+
     var formData = new FormData();
     formData.append('prompt_id', document.getElementById('edit-prompt-id').value);
     formData.append('label', document.getElementById('edit-prompt-label').value);
@@ -707,17 +884,33 @@ function saveEditedPrompt() {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP-Fehler: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            alert('Änderungen gespeichert!');
-            hideEditPromptDialog();
-            if (jQuery('#product-library-modal').is(':visible')) {
-                loadPromptLibraryInto('product', 'product-library-list');
-            } else {
-                loadPromptLibraryInto('vision', 'vision-library-list');
-            }
+            statusEl.innerHTML = '<i class="fa fa-check"></i> Erfolgreich gespeichert!';
+            statusEl.style.color = '#5cb85c';
+            setTimeout(function() {
+                hideEditPromptDialog();
+                if (jQuery('#product-library-modal').is(':visible')) {
+                    loadPromptLibraryInto('product', 'product-library-list');
+                } else {
+                    loadPromptLibraryInto('vision', 'vision-library-list');
+                }
+            }, 1000);
+        } else {
+            statusEl.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Fehler: ' + (data.error || 'Unbekannter Fehler');
+            statusEl.style.color = '#d9534f';
         }
+    })
+    .catch(error => {
+        statusEl.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Fehler beim Speichern: ' + error.message;
+        statusEl.style.color = '#d9534f';
+        console.error('Error saving prompt:', error);
     });
 }
 
@@ -766,8 +959,13 @@ jQuery(document).ready(function() {
         jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
         jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
 
-        // Add active to clicked tab
-        jQuery(this).parent().addClass('active');
+// Initialization
+jQuery(document).ready(function() {
+    console.log('AI Product Optimizer: Initializing (ohne Bootstrap)...');
+
+    // Erste Tab anzeigen
+    jQuery('.ai-product-optimizer-config .tab-pane').hide();
+    jQuery('.ai-product-optimizer-config .tab-pane.active').show();
 
         // Show corresponding pane
         var target = jQuery(this).attr('href');
