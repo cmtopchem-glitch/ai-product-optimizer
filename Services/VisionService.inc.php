@@ -59,8 +59,10 @@ WICHTIG für barrierefreie ALT-Texte:
 - Vermeide subjektive Bewertungen wie "schön" oder "hochwertig"
 - Beschreibe erkennbare Details: Farbe, Form, Material, Anzahl
 
-Erstelle ALT-Texte für folgende Sprachen:
+Erstelle ALT-Texte für ALLE folgenden Sprachen (PFLICHT - keine Sprache auslassen!):
 {LANGUAGES}
+
+WICHTIG: Du MUSST für JEDE aufgelistete Sprache einen ALT-Text generieren!
 
 Antworte NUR mit einem JSON-Objekt in diesem Format:
 {
@@ -68,6 +70,24 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
   "en": "ALT-text in English",
   ...
 }';
+    }
+
+    /**
+     * Lädt Sprachnamen dynamisch aus der Datenbank
+     * @return array Assoziatives Array [code => name]
+     */
+    private function getLanguageNamesFromDatabase()
+    {
+        $languageNames = [];
+        $query = "SELECT code, name FROM languages WHERE status = 1";
+        $result = xtc_db_query($query);
+
+        while ($row = xtc_db_fetch_array($result)) {
+            $code = strtolower($row['code']);
+            $languageNames[$code] = $row['name'];
+        }
+
+        return $languageNames;
     }
 
     /**
@@ -81,21 +101,12 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
      */
     public function generateAltTexts($imageUrl, $productName, $languages)
     {
-        // Erstelle Sprachliste für den Prompt
-        $languageNames = [
-            'de' => 'Deutsch',
-            'en' => 'English',
-            'fr' => 'Français',
-            'es' => 'Español',
-            'it' => 'Italiano',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
-            'am' => 'Deutsch' // Fallback für unbekannte Codes
-        ];
+        // Lade Sprachnamen dynamisch aus der Datenbank
+        $languageNames = $this->getLanguageNamesFromDatabase();
 
         $languageList = '';
         foreach ($languages as $lang) {
-            $langName = isset($languageNames[$lang]) ? $languageNames[$lang] : $lang;
+            $langName = isset($languageNames[$lang]) ? $languageNames[$lang] : ucfirst($lang);
             $languageList .= "- " . strtoupper($lang) . " (" . $langName . ")\n";
         }
 
@@ -184,11 +195,43 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
             throw new Exception('Konnte JSON nicht parsen: ' . substr($content, 0, 200));
         }
 
-        // Validiere dass alle Sprachen vorhanden sind
+        // Validiere dass alle Sprachen vorhanden sind und füge Fallbacks hinzu
+        $missingLanguages = [];
+        $fallbackText = null;
+
+        // Finde einen Fallback-Text (priorisiere de, dann en, dann erste verfügbare)
+        if (isset($altTexts['de']) && !empty($altTexts['de'])) {
+            $fallbackText = $altTexts['de'];
+        } elseif (isset($altTexts['en']) && !empty($altTexts['en'])) {
+            $fallbackText = $altTexts['en'];
+        } else {
+            // Nehme den ersten verfügbaren Text
+            foreach ($altTexts as $text) {
+                if (!empty($text)) {
+                    $fallbackText = $text;
+                    break;
+                }
+            }
+        }
+
+        // Prüfe alle angeforderten Sprachen
         foreach ($languages as $lang) {
             if (!isset($altTexts[$lang]) || empty($altTexts[$lang])) {
-                throw new Exception('Fehlender ALT-Text für Sprache: ' . $lang);
+                $missingLanguages[] = $lang;
+
+                // Verwende Fallback wenn verfügbar
+                if ($fallbackText) {
+                    $altTexts[$lang] = $fallbackText;
+                } else {
+                    // Kein Fallback verfügbar - generiere einen generischen Text
+                    $altTexts[$lang] = $productName;
+                }
             }
+        }
+
+        // Logge fehlende Sprachen (nur als Warnung, kein Fehler mehr)
+        if (!empty($missingLanguages)) {
+            error_log('AIProductOptimizer Warning: Fehlende ALT-Texte für Sprachen: ' . implode(', ', $missingLanguages) . ' - Fallback verwendet');
         }
 
         return $altTexts;
