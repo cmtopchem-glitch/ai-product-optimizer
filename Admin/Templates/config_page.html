@@ -144,6 +144,11 @@
             opacity: 0.5;
         }
 
+        /* Ensure buttons have proper spacing for icon and text */
+        .ai-product-optimizer-config .btn i {
+            margin-right: 5px;
+        }
+
         .ai-product-optimizer-config textarea.form-control {
             font-family: monospace;
             font-size: 13px;
@@ -934,71 +939,25 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// =============================================================================
-// AI Product Optimizer - Custom Tab & Modal Functions (ohne Bootstrap)
-// =============================================================================
+// Explicit Tab Initialization for Bootstrap 3
+jQuery(document).ready(function() {
+    console.log('AI Product Optimizer: Initializing...');
+    console.log('jQuery available:', typeof jQuery !== 'undefined');
+    console.log('Bootstrap available:', typeof jQuery.fn.modal !== 'undefined');
 
-// Tab-Switching Funktion
-function aiOptimizerSwitchTab(tabId) {
-    console.log('Switching to tab:', tabId);
+    // Check if tabs exist
+    var tabs = jQuery('.ai-product-optimizer-config .nav-tabs a');
+    console.log('Found tabs:', tabs.length);
 
-    // Alle Tabs und Panes deaktivieren
-    jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
-    jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
+    // Simple manual tab switching (no Bootstrap dependency)
+    jQuery('.ai-product-optimizer-config .nav-tabs a').on('click', function(e) {
+        e.preventDefault();
 
-    // Aktiven Tab und Pane aktivieren
-    jQuery('.ai-product-optimizer-config .nav-tabs a[href="#' + tabId + '"]').parent().addClass('active');
-    jQuery('#' + tabId).addClass('active').show();
-}
+        console.log('Tab clicked:', jQuery(this).text());
 
-// Modal öffnen
-function aiOptimizerShowModal(modalId) {
-    console.log('Opening modal:', modalId);
-    jQuery('#' + modalId).addClass('show').fadeIn(200);
-}
-
-// Modal schließen
-function aiOptimizerHideModal(modalId) {
-    console.log('Closing modal:', modalId);
-    jQuery('#' + modalId).removeClass('show').fadeOut(200);
-}
-
-// Prompt Library Modal öffnen
-function showProductPromptLibrary() {
-    aiOptimizerShowModal('product-library-modal');
-    loadPromptLibraryInto('product', 'product-library-list');
-}
-
-function showVisionPromptLibrary() {
-    aiOptimizerShowModal('vision-library-modal');
-    loadPromptLibraryInto('vision', 'vision-library-list');
-}
-
-function hideProductLibrary() {
-    aiOptimizerHideModal('product-library-modal');
-}
-
-function hideVisionLibrary() {
-    aiOptimizerHideModal('vision-library-modal');
-}
-
-function showAddPromptDialog(promptType) {
-    document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType);
-    document.getElementById('new-prompt-label').value = '';
-    document.getElementById('new-prompt-description').value = '';
-    document.getElementById('new-prompt-system').value = '';
-    document.getElementById('new-prompt-user').value = '';
-    document.getElementById('new-prompt-default').checked = false;
-    aiOptimizerShowModal('add-prompt-modal');
-}
-
-function hideAddPromptDialog() {
-    aiOptimizerHideModal('add-prompt-modal');
-}
-
-function hideEditPromptDialog() {
-    aiOptimizerHideModal('edit-prompt-modal');
-}
+        // Remove active from all tabs and panes
+        jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
+        jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
 
 // Initialization
 jQuery(document).ready(function() {
@@ -1008,13 +967,18 @@ jQuery(document).ready(function() {
     jQuery('.ai-product-optimizer-config .tab-pane').hide();
     jQuery('.ai-product-optimizer-config .tab-pane.active').show();
 
-    // Modal schließen bei Klick außerhalb
-    jQuery('.ai-optimizer-modal').on('click', function(e) {
-        if (jQuery(e.target).hasClass('ai-optimizer-modal')) {
-            jQuery(this).removeClass('show').fadeOut(200);
-        }
+        // Show corresponding pane
+        var target = jQuery(this).attr('href');
+        console.log('Showing pane:', target);
+        jQuery(target).addClass('active').show();
+
+        return false;
     });
 
-    console.log('AI Product Optimizer: Initialized successfully!');
+    // Make sure first tab is visible on load
+    jQuery('.ai-product-optimizer-config .tab-pane').hide();
+    jQuery('.ai-product-optimizer-config .tab-pane.active').show();
+
+    console.log('AI Product Optimizer: Tabs initialized successfully');
 });
 </script>
