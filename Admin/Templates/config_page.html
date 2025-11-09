@@ -9,17 +9,22 @@
             padding-top: 20px;
         }
 
-        /* Ensure tabs work properly */
+        /* Ensure tabs work properly - use !important to override Gambio styles */
         .ai-product-optimizer-config .tab-pane {
-            display: none;
+            display: none !important;
         }
 
         .ai-product-optimizer-config .tab-pane.active {
-            display: block;
+            display: block !important;
         }
 
         .ai-product-optimizer-config .nav-tabs {
             margin-bottom: 20px;
+        }
+
+        /* Ensure buttons have proper spacing for icon and text */
+        .ai-product-optimizer-config .btn i {
+            margin-right: 5px;
         }
 
         .ai-product-optimizer-config textarea.form-control {
@@ -743,28 +748,39 @@ function escapeHtml(text) {
 
 // Explicit Tab Initialization for Bootstrap 3
 jQuery(document).ready(function() {
-    // Manually initialize tab switching if data-toggle doesn't work
-    jQuery('.nav-tabs a[data-toggle="tab"]').on('click', function (e) {
-        e.preventDefault();
-        jQuery(this).tab('show');
-    });
+    console.log('AI Product Optimizer: Initializing...');
+    console.log('jQuery available:', typeof jQuery !== 'undefined');
+    console.log('Bootstrap available:', typeof jQuery.fn.modal !== 'undefined');
 
-    // Alternative: If Bootstrap tab() is not available, use manual show/hide
-    jQuery('.nav-tabs a').on('click', function(e) {
+    // Check if tabs exist
+    var tabs = jQuery('.ai-product-optimizer-config .nav-tabs a');
+    console.log('Found tabs:', tabs.length);
+
+    // Simple manual tab switching (no Bootstrap dependency)
+    jQuery('.ai-product-optimizer-config .nav-tabs a').on('click', function(e) {
         e.preventDefault();
+
+        console.log('Tab clicked:', jQuery(this).text());
 
         // Remove active from all tabs and panes
-        jQuery('.nav-tabs li').removeClass('active');
-        jQuery('.tab-pane').removeClass('active');
+        jQuery('.ai-product-optimizer-config .nav-tabs li').removeClass('active');
+        jQuery('.ai-product-optimizer-config .tab-pane').removeClass('active').hide();
 
         // Add active to clicked tab
         jQuery(this).parent().addClass('active');
 
         // Show corresponding pane
         var target = jQuery(this).attr('href');
-        jQuery(target).addClass('active');
+        console.log('Showing pane:', target);
+        jQuery(target).addClass('active').show();
+
+        return false;
     });
 
-    console.log('AI Product Optimizer: Tabs initialized');
+    // Make sure first tab is visible on load
+    jQuery('.ai-product-optimizer-config .tab-pane').hide();
+    jQuery('.ai-product-optimizer-config .tab-pane.active').show();
+
+    console.log('AI Product Optimizer: Tabs initialized successfully');
 });
 </script>
