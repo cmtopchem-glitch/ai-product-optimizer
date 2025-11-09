@@ -28,6 +28,7 @@ class AIProductOptimizerAdminEditProductExtenderComponent extends AIProductOptim
         $hasBackup = BackupService::hasBackup($productId);
         
         $content = '<div class="ai-optimizer-container" style="margin: 15px 0;">';
+        $content .= '<div class="btn-toolbar" role="toolbar" style="margin-bottom: 10px;">';
 
         // Generieren-Button
         $content .= '<button id="ai-optimize-button" class="btn btn-primary" type="button">';
@@ -36,24 +37,25 @@ class AIProductOptimizerAdminEditProductExtenderComponent extends AIProductOptim
 
         // Restore-Button (nur wenn Backup existiert)
         if ($hasBackup) {
-            $content .= ' <button id="ai-restore-button" class="btn btn-warning" type="button" onclick="AIProductOptimizer.restoreBackup()" style="margin-left: 10px;">';
+            $content .= ' <button id="ai-restore-button" class="btn btn-warning" type="button" onclick="AIProductOptimizer.restoreBackup()">';
             $content .= '<i class="fa fa-undo"></i> Original wiederherstellen';
             $content .= '</button>';
         }
 
-        // Konfigurations-Button
-        $content .= ' <a href="admin.php?do=AIProductOptimizerModuleCenterModule" class="btn btn-default" style="margin-left: 10px;">';
+        // Konfigurations-Button (öffnet in neuem Tab)
+        $content .= ' <a href="admin.php?do=AIProductOptimizerModuleCenterModule" class="btn btn-default" target="_blank">';
         $content .= '<i class="fa fa-cog"></i> Konfiguration';
         $content .= '</a>';
 
         // Backup-Verwaltung Toggle Button
         if ($hasBackup) {
-            $content .= ' <button id="ai-toggle-backups" class="btn btn-info" type="button" style="margin-left: 10px;">';
+            $content .= ' <button id="ai-toggle-backups" class="btn btn-info" type="button">';
             $content .= '<i class="fa fa-database"></i> Backups verwalten';
             $content .= '</button>';
         }
 
-        $content .= '<span id="ai-optimizer-status" style="margin-left: 10px;"></span>';
+        $content .= '</div>'; // Ende btn-toolbar
+        $content .= '<span id="ai-optimizer-status"></span>';
         $content .= '</div>';
 
         // Backup-Verwaltungsbereich (standardmäßig versteckt)

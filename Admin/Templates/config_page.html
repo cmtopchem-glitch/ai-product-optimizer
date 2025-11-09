@@ -3,44 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        .ai-config-container { max-width: 900px; margin: 20px; }
-        .alert { padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-        .alert-success { background-color: #d4edda; color: #155724; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; }
-        .alert-warning { background-color: #fff3cd; color: #856404; border: 2px solid #ffc107; }
-        .backup-warning { margin-bottom: 30px; }
-        .backup-dirs { margin: 15px 0; padding: 10px; background: #fffbf0; border-left: 4px solid #ff9800; }
-        .backup-dirs ul { margin: 10px 0; padding-left: 20px; }
-        .backup-dirs li { margin: 5px 0; font-family: monospace; font-size: 13px; }
-        .backup-dirs code { background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #ddd; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; }
-        textarea.form-control { min-height: 150px; resize: vertical; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-info { background-color: #17a2b8; color: white; }
-        .help-block { font-size: 12px; color: #666; margin-top: 5px; }
-        .section-title { margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; }
-        .placeholder-info { background: #f8f9fa; padding: 10px; margin-top: 10px; border-left: 3px solid #007bff; }
-        .placeholder-info code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; }
+        .ai-config-container {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        /* Tab-Content Spacing */
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        /* Alert Styles */
+        .alert-success {
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 4px;
+        }
+
+        .alert-danger {
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            border-radius: 4px;
+        }
+
+        .alert-warning {
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            border-radius: 4px;
+        }
+
+        /* Backup Warning Styles */
+        .backup-warning {
+            margin-bottom: 30px;
+        }
+
+        .backup-dirs {
+            margin: 15px 0;
+            padding: 10px;
+            background: #fffbf0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .backup-dirs ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .backup-dirs li {
+            margin: 5px 0;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .backup-dirs code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .help-block {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Placeholder Info Box */
+        .placeholder-info {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 3px solid #007bff;
+        }
+
+        .placeholder-info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        /* Library Section Styles */
+        .library-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .library-section h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+        }
+
+        .modal-content-wrapper {
+            background: white;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Table Styles for Library */
+        .library-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .library-table thead tr {
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .library-table th,
+        .library-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .library-table th {
+            font-weight: bold;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 2px;
+        }
     </style>
 </head>
 <body>
 <div class="ai-config-container">
-    <h1>🤖 AI Product Optimizer - Konfiguration</h1>
-    
+    <h1 style="margin-bottom: 20px;">
+        <i class="fa fa-robot"></i> AI Product Optimizer - Konfiguration
+    </h1>
+
     {if $success}
-    <div class="alert alert-success">✓ Konfiguration erfolgreich gespeichert!</div>
+    <div class="alert-success">
+        <i class="fa fa-check-circle"></i> Konfiguration erfolgreich gespeichert!
+    </div>
     {/if}
+
     {if $error}
-    <div class="alert alert-danger">✗ Bitte API Key eingeben!</div>
+    <div class="alert-danger">
+        <i class="fa fa-exclamation-circle"></i> Bitte API Key eingeben!
+    </div>
     {/if}
 
     {if $backupWarning}
-    <div class="alert alert-warning backup-warning">
-        <h3 style="margin-top: 0;">⚠️ WARNUNG: Backup-Verzeichnisse gefunden!</h3>
+    <div class="alert-warning backup-warning">
+        <h3 style="margin-top: 0;"><i class="fa fa-exclamation-triangle"></i> WARNUNG: Backup-Verzeichnisse gefunden!</h3>
         <p><strong>{$backupWarning.message}</strong></p>
 
         <div class="backup-dirs">
@@ -52,7 +220,7 @@
             </ul>
         </div>
 
-        <h4>🔧 Sofortige Behebung erforderlich:</h4>
+        <h4><i class="fa fa-wrench"></i> Sofortige Behebung erforderlich:</h4>
         <p>Diese Backup-Verzeichnisse befinden sich im aktiven Modul-Pfad und können zu folgenden Fehlern führen:</p>
         <ul>
             <li><strong>Fatal error: Cannot declare class AIProductOptimizerModuleCenterModuleController</strong></li>
@@ -60,18 +228,11 @@
             <li>ClassFinder-Konflikte</li>
         </ul>
 
-        <h4>📋 Lösung:</h4>
+        <h4><i class="fa fa-list-ol"></i> Lösung:</h4>
         <ol>
             <li>Verbinden Sie sich per SSH/FTP mit Ihrem Server</li>
             <li>Navigieren Sie zu: <code>GXModules/REDOzone/</code></li>
-            <li>Verschieben Sie die Backup-Verzeichnisse außerhalb des Modul-Pfads:
-                <br><code style="display: block; margin: 10px 0; padding: 10px; background: #333; color: #0f0;">
-                # Beispiel für SSH:<br>
-                cd /srv/www/IhrShop/GXModules/REDOzone/<br>
-                mkdir -p /backups/module_backups/<br>
-                mv AIProductOptimizer_BACKUP_* /backups/module_backups/
-                </code>
-            </li>
+            <li>Verschieben Sie die Backup-Verzeichnisse außerhalb des Modul-Pfads</li>
             <li>Laden Sie diese Seite neu um zu prüfen ob die Warnung verschwunden ist</li>
         </ol>
 
@@ -80,116 +241,193 @@
     {/if}
 
     <form action="admin.php?do=AIProductOptimizerModuleCenterModule/Save" method="post">
-        
-        <h2>🔑 API-Einstellungen</h2>
-        
-        <div class="form-group">
-            <label>OpenAI API Key *</label>
-            <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
-            <p class="help-block">API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></p>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active">
+                <a href="#tab-general" role="tab" data-toggle="tab">
+                    <i class="fa fa-cog"></i> Grundeinstellungen
+                </a>
+            </li>
+            <li>
+                <a href="#tab-product-prompts" role="tab" data-toggle="tab">
+                    <i class="fa fa-file-text"></i> Produkt Prompts
+                </a>
+            </li>
+            <li>
+                <a href="#tab-vision-prompts" role="tab" data-toggle="tab">
+                    <i class="fa fa-image"></i> Bilder Prompts
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+
+            <!-- ========================================== -->
+            <!-- TAB 1: Grundeinstellungen -->
+            <!-- ========================================== -->
+            <div class="tab-pane active" id="tab-general">
+                <h2><i class="fa fa-key"></i> API-Einstellungen</h2>
+
+                <div class="form-group">
+                    <label>OpenAI API Key *</label>
+                    <input type="text" class="form-control" name="openai_key" value="{$apiKey|escape}" required>
+                    <p class="help-block">
+                        API Key von <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>OpenAI Project ID (optional)</label>
+                    <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
+                    <p class="help-block">
+                        Project ID für OpenAI Project-Keys (erforderlich für neuere Modelle wie GPT-5). Format: proj_xxxxxxxxxx
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>Modell für Produkttexte</label>
+                    <select class="form-control" name="model" id="model-select">
+                        {if $availableModels && count($availableModels) > 0}
+                            {foreach from=$availableModels item=modelOption}
+                                <option value="{$modelOption.id}" {if $model == $modelOption.id}selected{/if}>{$modelOption.name}</option>
+                            {/foreach}
+                        {else}
+                            <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
+                            <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
+                        {/if}
+                    </select>
+                    <p class="help-block">Wählen Sie das Modell für die Produkttext-Generierung</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Modell für Bilderkennung (ALT-Texte)</label>
+                    <select class="form-control" name="vision_model" id="vision-model-select">
+                        <option value="gpt-4o" {if $visionModel == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität, empfohlen)</option>
+                        <option value="gpt-4o-mini" {if $visionModel == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (schneller, günstiger)</option>
+                    </select>
+                    <p class="help-block">Wählen Sie das Modell für die Bild-Analyse und ALT-Text-Generierung</p>
+                </div>
+
+                <div class="form-group">
+                    <button type="button" class="btn btn-default" onclick="updateModels()">
+                        <i class="fa fa-refresh"></i> Modelle von OpenAI aktualisieren
+                    </button>
+                    <p class="help-block" id="update-status"></p>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
+                    <h3><i class="fa fa-info-circle"></i> Verwendung</h3>
+                    <ol>
+                        <li>Konfigurieren Sie Ihren OpenAI API Key und wählen Sie ein Modell</li>
+                        <li>Passen Sie optional die Prompts in den anderen Tabs an</li>
+                        <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
+                        <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
+                        <li>Warten Sie ~40 Sekunden während die Texte generiert werden</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 2: Produkt Prompts -->
+            <!-- ========================================== -->
+            <div class="tab-pane" id="tab-product-prompts">
+                <h2><i class="fa fa-file-text"></i> Prompt-Konfiguration für Produkttexte</h2>
+                <p>Konfigurieren Sie hier die Prompts für die Generierung von SEO-optimierten Produkttexten.</p>
+
+                <div class="form-group">
+                    <label>System-Prompt</label>
+                    <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
+                    <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI für Produkttext-Generierung</p>
+                    <button type="button" class="btn btn-default btn-sm" onclick="resetSystemPrompt()">
+                        <i class="fa fa-undo"></i> Standard wiederherstellen
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>User-Prompt (Aufgabenstellung)</label>
+                    <textarea class="form-control" name="user_prompt" rows="20">{$userPrompt|escape}</textarea>
+                    <p class="help-block">Template für die Aufgabenstellung. Verwenden Sie Platzhalter für dynamische Inhalte:</p>
+                    <div class="placeholder-info">
+                        <strong>Verfügbare Platzhalter:</strong><br>
+                        <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                        <code>{literal}{ldelim}ORIGINAL_TEXT{rdelim}{/literal}</code> - Original Produktbeschreibung<br>
+                        <code>{literal}{ldelim}LANGUAGE{rdelim}{/literal}</code> - Zielsprache<br>
+                        <code>{literal}{ldelim}BRAND_LINE{rdelim}{/literal}</code> - Marke (falls vorhanden)<br>
+                        <code>{literal}{ldelim}CATEGORY_LINE{rdelim}{/literal}</code> - Kategorie (falls vorhanden)
+                    </div>
+                    <button type="button" class="btn btn-default btn-sm" onclick="resetUserPrompt()">
+                        <i class="fa fa-undo"></i> Standard wiederherstellen
+                    </button>
+                </div>
+
+                <div class="library-section">
+                    <h4><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h4>
+                    <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die Produkttext-Generierung.</p>
+                    <button type="button" class="btn btn-primary" onclick="showProductPromptLibrary()">
+                        <i class="fa fa-book"></i> Bibliothek öffnen
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TAB 3: Vision/Bilder Prompts -->
+            <!-- ========================================== -->
+            <div class="tab-pane" id="tab-vision-prompts">
+                <h2><i class="fa fa-image"></i> Prompt-Konfiguration für ALT-Texte</h2>
+                <p>Konfigurieren Sie hier die Prompts für die Generierung von barrierefreien ALT-Texten aus Produktbildern.</p>
+
+                <div class="form-group">
+                    <label>System-Prompt für ALT-Texte</label>
+                    <textarea class="form-control" name="vision_system_prompt" rows="4">{$visionSystemPrompt|escape}</textarea>
+                    <p class="help-block">Definiert die Rolle für barrierefreie Bildbeschreibungen</p>
+                    <button type="button" class="btn btn-default btn-sm" onclick="resetVisionSystemPrompt()">
+                        <i class="fa fa-undo"></i> Standard wiederherstellen
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>User-Prompt für ALT-Texte</label>
+                    <textarea class="form-control" name="vision_user_prompt" rows="15">{$visionUserPrompt|escape}</textarea>
+                    <p class="help-block">Template für die ALT-Text-Generierung. Platzhalter werden automatisch ersetzt.</p>
+                    <div class="placeholder-info">
+                        <strong>Verfügbare Platzhalter:</strong><br>
+                        <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
+                        <code>{literal}{ldelim}LANGUAGES{rdelim}{/literal}</code> - Liste der gewünschten Sprachen
+                    </div>
+                    <button type="button" class="btn btn-default btn-sm" onclick="resetVisionUserPrompt()">
+                        <i class="fa fa-undo"></i> Standard wiederherstellen
+                    </button>
+                </div>
+
+                <div class="library-section" style="border-left-color: #17a2b8;">
+                    <h4><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h4>
+                    <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die ALT-Text-Generierung.</p>
+                    <button type="button" class="btn btn-info" onclick="showVisionPromptLibrary()">
+                        <i class="fa fa-book"></i> Bibliothek öffnen
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>OpenAI Project ID (optional)</label>
-            <input type="text" class="form-control" name="project_id" value="{$projectId|escape}" placeholder="proj_...">
-            <p class="help-block">Project ID für OpenAI Project-Keys (erforderlich für neuere Modelle wie GPT-5). Format: proj_xxxxxxxxxx</p>
-        </div>
-
-        <div class="form-group">
-            <label>Modell</label>
-            <select class="form-control" name="model" id="model-select">
-                {if $availableModels && count($availableModels) > 0}
-                    {foreach from=$availableModels item=modelOption}
-                        <option value="{$modelOption.id}" {if $model == $modelOption.id}selected{/if}>{$modelOption.name}</option>
-                    {/foreach}
-                {else}
-                    <option value="gpt-4o-mini" {if $model == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (empfohlen, günstig)</option>
-                    <option value="gpt-4o" {if $model == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität)</option>
-                {/if}
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <button type="button" class="btn btn-secondary" onclick="updateModels()">
-                🔄 Modelle von OpenAI aktualisieren
+        <!-- Form Actions -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save"></i> Einstellungen speichern
             </button>
-            <p class="help-block" id="update-status"></p>
+            <a href="admin.php?do=ModuleCenter" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Zurück zum Modulcenter
+            </a>
         </div>
-        
-        <h2 class="section-title">📝 Prompt-Konfiguration (Produkttexte)</h2>
-
-        <div class="form-group">
-            <label>System-Prompt</label>
-            <textarea class="form-control" name="system_prompt" rows="4">{$systemPrompt|escape}</textarea>
-            <p class="help-block">Definiert die Rolle und das grundsätzliche Verhalten der KI für Produkttext-Generierung</p>
-            <button type="button" class="btn btn-info btn-sm" onclick="resetSystemPrompt()">Standard wiederherstellen</button>
-        </div>
-        
-        <div class="form-group">
-            <label>User-Prompt (Aufgabenstellung)</label>
-            <textarea class="form-control" name="user_prompt" rows="20">{$userPrompt|escape}</textarea>
-            <p class="help-block">Template für die Aufgabenstellung. Verwenden Sie Platzhalter für dynamische Inhalte:</p>
-            <div class="placeholder-info">
-                <strong>Verfügbare Platzhalter:</strong><br>
-                <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
-                <code>{literal}{ldelim}ORIGINAL_TEXT{rdelim}{/literal}</code> - Original Produktbeschreibung<br>
-                <code>{literal}{ldelim}LANGUAGE{rdelim}{/literal}</code> - Zielsprache<br>
-                <code>{literal}{ldelim}BRAND_LINE{rdelim}{/literal}</code> - Marke (falls vorhanden)<br>
-                <code>{literal}{ldelim}CATEGORY_LINE{rdelim}{/literal}</code> - Kategorie (falls vorhanden)
-            </div>
-            <button type="button" class="btn btn-info btn-sm" onclick="resetUserPrompt()">Standard wiederherstellen</button>
-        </div>
-
-        <div class="form-group" style="background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-top: 20px;">
-            <h4 style="margin-top: 0;">📚 Prompt-Bibliothek für Produkttexte</h4>
-            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die Produkttext-Generierung.</p>
-            <button type="button" class="btn btn-primary" onclick="showProductPromptLibrary()">📖 Bibliothek öffnen</button>
-        </div>
-
-        <h2 class="section-title">🖼️ ALT-Text-Generierung (Barrierefreiheit)</h2>
-
-        <div class="form-group">
-            <label>Vision-Modell</label>
-            <select class="form-control" name="vision_model" id="vision-model-select">
-                <option value="gpt-4o" {if $visionModel == 'gpt-4o'}selected{/if}>GPT-4o (beste Qualität, empfohlen)</option>
-                <option value="gpt-4o-mini" {if $visionModel == 'gpt-4o-mini'}selected{/if}>GPT-4o-mini (schneller, günstiger)</option>
-            </select>
-            <p class="help-block">Modell für die Bild-Analyse und ALT-Text-Generierung</p>
-        </div>
-
-        <div class="form-group">
-            <label>System-Prompt für ALT-Texte</label>
-            <textarea class="form-control" name="vision_system_prompt" rows="4">{$visionSystemPrompt|escape}</textarea>
-            <p class="help-block">Definiert die Rolle für barrierefreie Bildbeschreibungen</p>
-            <button type="button" class="btn btn-info btn-sm" onclick="resetVisionSystemPrompt()">Standard wiederherstellen</button>
-        </div>
-
-        <div class="form-group">
-            <label>User-Prompt für ALT-Texte</label>
-            <textarea class="form-control" name="vision_user_prompt" rows="15">{$visionUserPrompt|escape}</textarea>
-            <p class="help-block">Template für die ALT-Text-Generierung. Platzhalter werden automatisch ersetzt.</p>
-            <div class="placeholder-info">
-                <strong>Verfügbare Platzhalter:</strong><br>
-                <code>{literal}{ldelim}PRODUCT_NAME{rdelim}{/literal}</code> - Produktname<br>
-                <code>{literal}{ldelim}LANGUAGES{rdelim}{/literal}</code> - Liste der gewünschten Sprachen
-            </div>
-            <button type="button" class="btn btn-info btn-sm" onclick="resetVisionUserPrompt()">Standard wiederherstellen</button>
-        </div>
-
-        <div class="form-group" style="background: #f8f9fa; padding: 15px; border-left: 4px solid #17a2b8; margin-top: 20px;">
-            <h4 style="margin-top: 0;">📚 Prompt-Bibliothek für ALT-Texte</h4>
-            <p>Speichern und verwalten Sie mehrere Prompt-Vorlagen für die ALT-Text-Generierung.</p>
-            <button type="button" class="btn btn-primary" onclick="showVisionPromptLibrary()">📖 Bibliothek öffnen</button>
-        </div>
-
-        <button type="submit" class="btn btn-primary">💾 Speichern</button>
-        <a href="admin.php?do=ModuleCenter" class="btn">← Zurück</a>
     </form>
 
     <!-- Modal für neuen Prompt -->
-    <div id="add-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; max-width: 800px; margin: 50px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
-            <h3>📝 Neuen Prompt speichern</h3>
+    <div id="add-prompt-modal" class="modal-overlay">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h3><i class="fa fa-plus-circle"></i> Neuen Prompt speichern</h3>
+            </div>
             <div class="form-group">
                 <label>Label/Name *</label>
                 <input type="text" class="form-control" id="new-prompt-label" placeholder="z.B. SEO-optimiert, Verkaufsorientiert, Technisch">
@@ -211,16 +449,22 @@
                     <input type="checkbox" id="new-prompt-default"> Als Standard-Prompt setzen
                 </label>
             </div>
-            <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">💾 Prompt speichern</button>
-            <button type="button" class="btn btn-secondary" onclick="hideAddPromptDialog()">Abbrechen</button>
+            <button type="button" class="btn btn-primary" onclick="saveNewPrompt()">
+                <i class="fa fa-save"></i> Prompt speichern
+            </button>
+            <button type="button" class="btn btn-default" onclick="hideAddPromptDialog()">
+                Abbrechen
+            </button>
             <p id="save-prompt-status" class="help-block"></p>
         </div>
     </div>
 
     <!-- Modal für Prompt bearbeiten -->
-    <div id="edit-prompt-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; max-width: 800px; margin: 50px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
-            <h3>✏️ Prompt bearbeiten</h3>
+    <div id="edit-prompt-modal" class="modal-overlay">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h3><i class="fa fa-edit"></i> Prompt bearbeiten</h3>
+            </div>
             <input type="hidden" id="edit-prompt-id">
             <div class="form-group">
                 <label>Label/Name *</label>
@@ -248,21 +492,31 @@
                     <input type="checkbox" id="edit-prompt-active" checked> Aktiv
                 </label>
             </div>
-            <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">💾 Änderungen speichern</button>
-            <button type="button" class="btn btn-secondary" onclick="hideEditPromptDialog()">Abbrechen</button>
+            <button type="button" class="btn btn-primary" onclick="saveEditedPrompt()">
+                <i class="fa fa-save"></i> Änderungen speichern
+            </button>
+            <button type="button" class="btn btn-default" onclick="hideEditPromptDialog()">
+                Abbrechen
+            </button>
             <p id="edit-prompt-status" class="help-block"></p>
         </div>
     </div>
 
     <!-- Modal für Produkttext Prompt-Bibliothek -->
-    <div id="product-library-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;" onclick="if(event.target.id==='product-library-modal') hideProductLibrary();">
-        <div style="background: white; max-width: 1000px; margin: 30px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
-            <h3 style="border-left: 4px solid #007bff; padding-left: 15px;">📚 Prompt-Bibliothek für Produkttexte</h3>
+    <div id="product-library-modal" class="modal-overlay" onclick="if(event.target.id==='product-library-modal') hideProductLibrary();">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h3><i class="fa fa-book"></i> Prompt-Bibliothek für Produkttexte</h3>
+            </div>
             <p>Verwalten Sie Ihre gespeicherten Prompt-Vorlagen für die Produkttext-Generierung.</p>
 
             <div style="margin-bottom: 20px;">
-                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">➕ Neuen Prompt erstellen</button>
-                <button type="button" class="btn btn-secondary" style="float: right;" onclick="hideProductLibrary()">✕ Schließen</button>
+                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('product')">
+                    <i class="fa fa-plus"></i> Neuen Prompt erstellen
+                </button>
+                <button type="button" class="btn btn-default" style="float: right;" onclick="hideProductLibrary()">
+                    <i class="fa fa-times"></i> Schließen
+                </button>
             </div>
 
             <div id="product-library-list"></div>
@@ -270,32 +524,29 @@
     </div>
 
     <!-- Modal für Vision/ALT-Text Prompt-Bibliothek -->
-    <div id="vision-library-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;" onclick="if(event.target.id==='vision-library-modal') hideVisionLibrary();">
-        <div style="background: white; max-width: 1000px; margin: 30px auto; padding: 30px; border-radius: 8px; max-height: 90vh; overflow-y: auto;">
-            <h3 style="border-left: 4px solid #17a2b8; padding-left: 15px;">📚 Prompt-Bibliothek für ALT-Texte</h3>
+    <div id="vision-library-modal" class="modal-overlay" onclick="if(event.target.id==='vision-library-modal') hideVisionLibrary();">
+        <div class="modal-content-wrapper">
+            <div class="modal-header">
+                <h3><i class="fa fa-book"></i> Prompt-Bibliothek für ALT-Texte</h3>
+            </div>
             <p>Verwalten Sie Ihre gespeicherten Prompt-Vorlagen für die barrierefreie ALT-Text-Generierung.</p>
 
             <div style="margin-bottom: 20px;">
-                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">➕ Neuen Prompt erstellen</button>
-                <button type="button" class="btn btn-secondary" style="float: right;" onclick="hideVisionLibrary()">✕ Schließen</button>
+                <button type="button" class="btn btn-success" onclick="showAddPromptDialog('vision')">
+                    <i class="fa fa-plus"></i> Neuen Prompt erstellen
+                </button>
+                <button type="button" class="btn btn-default" style="float: right;" onclick="hideVisionLibrary()">
+                    <i class="fa fa-times"></i> Schließen
+                </button>
             </div>
 
             <div id="vision-library-list"></div>
         </div>
     </div>
-
-    <hr style="margin-top: 40px;">
-    <h3>📝 Verwendung</h3>
-    <ol>
-        <li>Konfigurieren Sie Ihren OpenAI API Key und wählen Sie ein Modell</li>
-        <li>Passen Sie optional die Prompts an Ihre Bedürfnisse an</li>
-        <li>Öffnen Sie ein Produkt in der Artikelverwaltung</li>
-        <li>Klicken Sie auf "SEO-Texte mit KI generieren"</li>
-        <li>Warten Sie ~40 Sekunden während die Texte generiert werden</li>
-    </ol>
 </div>
 
 <script>
+// Default Prompts
 var defaultSystemPrompt = 'Du bist ein professioneller E-Commerce SEO-Texter. Du antwortest immer im angeforderten JSON-Format.';
 
 var defaultUserPrompt = `Du bist ein Experte für E-Commerce SEO und Produkttexte.
@@ -324,18 +575,6 @@ FORMAT DER ANTWORT (JSON):
 
 Antworte NUR mit dem JSON-Objekt, ohne zusätzlichen Text.`;
 
-function resetSystemPrompt() {
-    if (confirm('System-Prompt auf Standard zurücksetzen?')) {
-        document.querySelector('textarea[name="system_prompt"]').value = defaultSystemPrompt;
-    }
-}
-
-function resetUserPrompt() {
-    if (confirm('User-Prompt auf Standard zurücksetzen?')) {
-        document.querySelector('textarea[name="user_prompt"]').value = defaultUserPrompt;
-    }
-}
-
 var defaultVisionSystemPrompt = 'Du bist ein Experte für barrierefreie Bildbeschreibungen. Du erstellst präzise, informative ALT-Texte für Produktbilder, die für Screenreader-Nutzer optimal geeignet sind.';
 
 var defaultVisionUserPrompt = `Analysiere dieses Produktbild und erstelle barrierefreie ALT-Texte.
@@ -359,6 +598,19 @@ Antworte NUR mit einem JSON-Objekt in diesem Format:
   ...
 }`;
 
+// Reset Functions
+function resetSystemPrompt() {
+    if (confirm('System-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="system_prompt"]').value = defaultSystemPrompt;
+    }
+}
+
+function resetUserPrompt() {
+    if (confirm('User-Prompt auf Standard zurücksetzen?')) {
+        document.querySelector('textarea[name="user_prompt"]').value = defaultUserPrompt;
+    }
+}
+
 function resetVisionSystemPrompt() {
     if (confirm('Vision System-Prompt auf Standard zurücksetzen?')) {
         document.querySelector('textarea[name="vision_system_prompt"]').value = defaultVisionSystemPrompt;
@@ -371,9 +623,10 @@ function resetVisionUserPrompt() {
     }
 }
 
+// Update Models
 function updateModels() {
     var statusEl = document.getElementById('update-status');
-    statusEl.innerHTML = '⏳ Lade Modelle von OpenAI...';
+    statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Lade Modelle von OpenAI...';
     statusEl.style.color = '#666';
 
     fetch('admin.php?do=AIProductOptimizerModuleCenterModule/UpdateModels', {
@@ -382,27 +635,42 @@ function updateModels() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            statusEl.innerHTML = '✓ ' + data.count + ' Modelle aktualisiert. Seite wird neu geladen...';
+            statusEl.innerHTML = '<i class="fa fa-check"></i> ' + data.count + ' Modelle aktualisiert. Seite wird neu geladen...';
             statusEl.style.color = '#28a745';
             setTimeout(() => location.reload(), 1500);
         } else {
-            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + data.error;
             statusEl.style.color = '#dc3545';
         }
     })
     .catch(error => {
-        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + error.message;
         statusEl.style.color = '#dc3545';
     });
 }
 
-// ============================================================
 // Prompt Library Functions
-// ============================================================
+function showProductPromptLibrary() {
+    document.getElementById('product-library-modal').style.display = 'block';
+    loadPromptLibraryInto('product', 'product-library-list');
+}
 
-function loadPromptLibrary(promptType) {
-    var listEl = document.getElementById('prompt-library-list');
-    listEl.innerHTML = '<p style="color: #666;">⏳ Lade Prompts...</p>';
+function hideProductLibrary() {
+    document.getElementById('product-library-modal').style.display = 'none';
+}
+
+function showVisionPromptLibrary() {
+    document.getElementById('vision-library-modal').style.display = 'block';
+    loadPromptLibraryInto('vision', 'vision-library-list');
+}
+
+function hideVisionLibrary() {
+    document.getElementById('vision-library-modal').style.display = 'none';
+}
+
+function loadPromptLibraryInto(promptType, targetElementId) {
+    var listEl = document.getElementById(targetElementId);
+    listEl.innerHTML = '<p style="color: #666;"><i class="fa fa-spinner fa-spin"></i> Lade Prompts...</p>';
 
     var url = 'admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1';
     if (promptType) {
@@ -413,52 +681,81 @@ function loadPromptLibrary(promptType) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            displayPromptLibrary(data.prompts, promptType);
+            displayPromptLibraryInto(data.prompts, promptType, targetElementId);
         } else {
-            listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + data.error + '</p>';
+            listEl.innerHTML = '<p style="color: #dc3545;"><i class="fa fa-times"></i> Fehler: ' + data.error + '</p>';
         }
     })
     .catch(error => {
-        listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + error.message + '</p>';
+        listEl.innerHTML = '<p style="color: #dc3545;"><i class="fa fa-times"></i> Fehler: ' + error.message + '</p>';
     });
 }
 
-function displayPromptLibrary(prompts) {
-    var listEl = document.getElementById('prompt-library-list');
+function displayPromptLibraryInto(prompts, promptType, targetElementId) {
+    var listEl = document.getElementById(targetElementId);
 
-    if (prompts.length === 0) {
-        listEl.innerHTML = '<p style="color: #666;">Noch keine Prompts gespeichert. Klicken Sie auf "Neuen Prompt speichern" um zu beginnen.</p>';
+    if (!prompts || prompts.length === 0) {
+        var typeLabel = promptType === 'vision' ? 'ALT-Text' : 'Produkttext';
+        listEl.innerHTML = '<div style="padding: 20px; background: #f8f9fa; border-radius: 4px; text-align: center;">' +
+            '<p style="color: #666; margin: 0;">Noch keine ' + typeLabel + '-Prompts gespeichert.</p>' +
+            '<p style="color: #999; margin: 10px 0 0 0; font-size: 0.9em;">Klicken Sie auf "Neuen Prompt erstellen" um einen Prompt zu speichern.</p>' +
+            '</div>';
         return;
     }
 
-    var html = '<table style="width: 100%; border-collapse: collapse;">';
-    html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">';
-    html += '<th style="padding: 10px; text-align: left;">Label</th>';
-    html += '<th style="padding: 10px; text-align: left;">Beschreibung</th>';
-    html += '<th style="padding: 10px; text-align: center;">Standard</th>';
-    html += '<th style="padding: 10px; text-align: center;">Verwendet</th>';
-    html += '<th style="padding: 10px; text-align: right;">Aktionen</th>';
+    var html = '<table class="library-table">';
+    html += '<thead><tr>';
+    html += '<th>Label</th>';
+    html += '<th>Beschreibung</th>';
+    html += '<th>Erstellt</th>';
+    html += '<th style="text-align: center;">Standard</th>';
+    html += '<th style="text-align: center;">Verwendet</th>';
+    html += '<th style="text-align: right;">Aktionen</th>';
     html += '</tr></thead><tbody>';
 
     prompts.forEach(function(prompt) {
-        html += '<tr style="border-bottom: 1px solid #ddd;">';
-        html += '<td style="padding: 10px;"><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
-        html += '<td style="padding: 10px;">' + (prompt.prompt_description ? escapeHtml(prompt.prompt_description) : '<em style="color: #999;">-</em>') + '</td>';
-        html += '<td style="padding: 10px; text-align: center;">' + (prompt.is_default == 1 ? '⭐ Ja' : '-') + '</td>';
-        html += '<td style="padding: 10px; text-align: center;">' + (prompt.usage_count || 0) + 'x</td>';
-        html += '<td style="padding: 10px; text-align: right;">';
-        html += '<button class="btn btn-info btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="loadPromptIntoForm(' + prompt.prompt_id + ')">📥 Laden</button> ';
-        html += '<button class="btn btn-secondary btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="editPrompt(' + prompt.prompt_id + ')">✏️ Bearbeiten</button> ';
-        if (prompt.is_default != 1) {
-            html += '<button class="btn btn-info btn-sm" style="padding: 5px 10px; margin: 2px;" onclick="setDefaultPrompt(' + prompt.prompt_id + ')">⭐ Als Standard</button> ';
-        }
-        html += '<button class="btn btn-secondary btn-sm" style="padding: 5px 10px; margin: 2px; background: #dc3545;" onclick="deletePrompt(' + prompt.prompt_id + ')">🗑️ Löschen</button>';
+        html += '<tr' + (prompt.is_default ? ' style="background-color: #e7f3ff;"' : '') + '>';
+        html += '<td><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
+        html += '<td>' + (prompt.prompt_description ? escapeHtml(prompt.prompt_description) : '<em style="color: #999;">-</em>') + '</td>';
+        html += '<td>' + prompt.created_at + '</td>';
+        html += '<td style="text-align: center;">' + (prompt.is_default ? '<i class="fa fa-star" style="color: #ffc107;"></i>' : '-') + '</td>';
+        html += '<td style="text-align: center;">' + prompt.usage_count + 'x</td>';
+        html += '<td style="text-align: right;">';
+        html += '<button class="btn btn-sm btn-info" onclick="loadPromptToForm(' + prompt.prompt_id + ', \'' + promptType + '\')"><i class="fa fa-download"></i> Laden</button> ';
+        html += '<button class="btn btn-sm btn-default" onclick="editPrompt(' + prompt.prompt_id + ')"><i class="fa fa-edit"></i></button> ';
+        html += '<button class="btn btn-sm btn-danger" onclick="deletePromptAndReload(' + prompt.prompt_id + ', \'' + promptType + '\', \'' + targetElementId + '\')"><i class="fa fa-trash"></i></button>';
         html += '</td>';
         html += '</tr>';
     });
 
     html += '</tbody></table>';
     listEl.innerHTML = html;
+}
+
+function loadPromptToForm(promptId, promptType) {
+    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=0')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var prompt = data.prompts.find(p => p.prompt_id == promptId);
+            if (prompt) {
+                if (promptType === 'vision') {
+                    document.querySelector('textarea[name="vision_system_prompt"]').value = prompt.system_prompt;
+                    document.querySelector('textarea[name="vision_user_prompt"]').value = prompt.user_prompt;
+                    hideVisionLibrary();
+                    alert('✓ Vision-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
+                } else {
+                    document.querySelector('textarea[name="system_prompt"]').value = prompt.system_prompt;
+                    document.querySelector('textarea[name="user_prompt"]').value = prompt.user_prompt;
+                    hideProductLibrary();
+                    alert('✓ Produkttext-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
+                }
+            }
+        }
+    })
+    .catch(error => {
+        alert('❌ Fehler beim Laden: ' + error.message);
+    });
 }
 
 function showAddPromptDialog(promptType) {
@@ -474,7 +771,6 @@ function showAddPromptDialog(promptType) {
     document.getElementById('new-prompt-description').value = '';
     document.getElementById('new-prompt-default').checked = false;
     document.getElementById('save-prompt-status').innerHTML = '';
-    // Speichere prompt_type in hidden field oder data-attribute
     document.getElementById('add-prompt-modal').setAttribute('data-prompt-type', promptType || 'product');
     document.getElementById('add-prompt-modal').style.display = 'block';
 }
@@ -493,12 +789,12 @@ function saveNewPrompt() {
     var statusEl = document.getElementById('save-prompt-status');
 
     if (!label || !systemPrompt || !userPrompt) {
-        statusEl.innerHTML = '❌ Bitte alle Pflichtfelder ausfüllen';
+        statusEl.innerHTML = '<i class="fa fa-times"></i> Bitte alle Pflichtfelder ausfüllen';
         statusEl.style.color = '#dc3545';
         return;
     }
 
-    statusEl.innerHTML = '⏳ Speichert Prompt...';
+    statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Speichert Prompt...';
     statusEl.style.color = '#666';
 
     var formData = new FormData();
@@ -516,11 +812,10 @@ function saveNewPrompt() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            statusEl.innerHTML = '✓ Prompt erfolgreich gespeichert!';
+            statusEl.innerHTML = '<i class="fa fa-check"></i> Prompt erfolgreich gespeichert!';
             statusEl.style.color = '#28a745';
             setTimeout(() => {
                 hideAddPromptDialog();
-                // Reload the appropriate library modal if it's open
                 if (document.getElementById('product-library-modal').style.display === 'block') {
                     loadPromptLibraryInto('product', 'product-library-list');
                 } else if (document.getElementById('vision-library-modal').style.display === 'block') {
@@ -528,32 +823,13 @@ function saveNewPrompt() {
                 }
             }, 1500);
         } else {
-            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + data.error;
             statusEl.style.color = '#dc3545';
         }
     })
     .catch(error => {
-        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + error.message;
         statusEl.style.color = '#dc3545';
-    });
-}
-
-function loadPromptIntoForm(promptId) {
-    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompt&prompt_id=' + promptId)
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            var prompt = data.prompt;
-            document.querySelector('textarea[name="system_prompt"]').value = prompt.system_prompt;
-            document.querySelector('textarea[name="user_prompt"]').value = prompt.user_prompt;
-            alert('✓ Prompt "' + prompt.prompt_label + '" wurde in das Formular geladen. Vergessen Sie nicht zu speichern!');
-            window.scrollTo(0, 0);
-        } else {
-            alert('❌ Fehler: ' + data.error);
-        }
-    })
-    .catch(error => {
-        alert('❌ Fehler: ' + error.message);
     });
 }
 
@@ -596,12 +872,12 @@ function saveEditedPrompt() {
     var statusEl = document.getElementById('edit-prompt-status');
 
     if (!label || !systemPrompt || !userPrompt) {
-        statusEl.innerHTML = '❌ Bitte alle Pflichtfelder ausfüllen';
+        statusEl.innerHTML = '<i class="fa fa-times"></i> Bitte alle Pflichtfelder ausfüllen';
         statusEl.style.color = '#dc3545';
         return;
     }
 
-    statusEl.innerHTML = '⏳ Speichert Änderungen...';
+    statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Speichert Änderungen...';
     statusEl.style.color = '#666';
 
     var formData = new FormData();
@@ -620,11 +896,10 @@ function saveEditedPrompt() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            statusEl.innerHTML = '✓ Änderungen erfolgreich gespeichert!';
+            statusEl.innerHTML = '<i class="fa fa-check"></i> Änderungen erfolgreich gespeichert!';
             statusEl.style.color = '#28a745';
             setTimeout(() => {
                 hideEditPromptDialog();
-                // Reload the appropriate library modal if it's open
                 if (document.getElementById('product-library-modal').style.display === 'block') {
                     loadPromptLibraryInto('product', 'product-library-list');
                 } else if (document.getElementById('vision-library-modal').style.display === 'block') {
@@ -632,188 +907,13 @@ function saveEditedPrompt() {
                 }
             }, 1500);
         } else {
-            statusEl.innerHTML = '❌ Fehler: ' + data.error;
+            statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + data.error;
             statusEl.style.color = '#dc3545';
         }
     })
     .catch(error => {
-        statusEl.innerHTML = '❌ Fehler: ' + error.message;
+        statusEl.innerHTML = '<i class="fa fa-times"></i> Fehler: ' + error.message;
         statusEl.style.color = '#dc3545';
-    });
-}
-
-function deletePrompt(promptId) {
-    if (!confirm('Möchten Sie diesen Prompt wirklich löschen?')) {
-        return;
-    }
-
-    // Use URLSearchParams instead of FormData for better Gambio compatibility
-    var params = new URLSearchParams();
-    params.append('prompt_id', promptId);
-
-    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/DeletePrompt', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: params.toString()
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('✓ Prompt erfolgreich gelöscht');
-            loadPromptLibrary();
-        } else {
-            alert('❌ Fehler: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Delete error:', error);
-        alert('❌ Fehler: ' + error.message);
-    });
-}
-
-function setDefaultPrompt(promptId) {
-    if (!confirm('Möchten Sie diesen Prompt als Standard setzen?')) {
-        return;
-    }
-
-    var formData = new FormData();
-    formData.append('prompt_id', promptId);
-
-    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/SetDefaultPrompt', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('✓ Standard-Prompt erfolgreich gesetzt');
-            loadPromptLibrary();
-        } else {
-            alert('❌ Fehler: ' + data.error);
-        }
-    })
-    .catch(error => {
-        alert('❌ Fehler: ' + error.message);
-    });
-}
-
-function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ============================================================
-// Separate Library Functions for Product and Vision
-// ============================================================
-
-function showProductPromptLibrary() {
-    document.getElementById('product-library-modal').style.display = 'block';
-    loadPromptLibraryInto('product', 'product-library-list');
-}
-
-function hideProductLibrary() {
-    document.getElementById('product-library-modal').style.display = 'none';
-}
-
-function showVisionPromptLibrary() {
-    document.getElementById('vision-library-modal').style.display = 'block';
-    loadPromptLibraryInto('vision', 'vision-library-list');
-}
-
-function hideVisionLibrary() {
-    document.getElementById('vision-library-modal').style.display = 'none';
-}
-
-function loadPromptLibraryInto(promptType, targetElementId) {
-    var listEl = document.getElementById(targetElementId);
-    listEl.innerHTML = '<p style="color: #666;">⏳ Lade Prompts...</p>';
-
-    var url = 'admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=1';
-    if (promptType) {
-        url += '&prompt_type=' + promptType;
-    }
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            displayPromptLibraryInto(data.prompts, promptType, targetElementId);
-        } else {
-            listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + data.error + '</p>';
-        }
-    })
-    .catch(error => {
-        listEl.innerHTML = '<p style="color: #dc3545;">❌ Fehler: ' + error.message + '</p>';
-    });
-}
-
-function displayPromptLibraryInto(prompts, promptType, targetElementId) {
-    var listEl = document.getElementById(targetElementId);
-
-    if (!prompts || prompts.length === 0) {
-        var typeLabel = promptType === 'vision' ? 'ALT-Text' : 'Produkttext';
-        listEl.innerHTML = '<div style="padding: 20px; background: #f8f9fa; border-radius: 4px; text-align: center;">' +
-            '<p style="color: #666; margin: 0;">Noch keine ' + typeLabel + '-Prompts gespeichert.</p>' +
-            '<p style="color: #999; margin: 10px 0 0 0; font-size: 0.9em;">Klicken Sie auf "➕ Neuen Prompt erstellen" um einen Prompt zu speichern.</p>' +
-            '</div>';
-        return;
-    }
-
-    var html = '<table class="table table-striped" style="margin-top: 20px;">';
-    html += '<thead><tr>';
-    html += '<th>Label</th>';
-    html += '<th>Beschreibung</th>';
-    html += '<th>Erstellt</th>';
-    html += '<th>Standard</th>';
-    html += '<th>Verwendet</th>';
-    html += '<th>Aktionen</th>';
-    html += '</tr></thead><tbody>';
-
-    prompts.forEach(function(prompt) {
-        html += '<tr' + (prompt.is_default ? ' style="background-color: #e7f3ff;"' : '') + '>';
-        html += '<td><strong>' + escapeHtml(prompt.prompt_label) + '</strong></td>';
-        html += '<td>' + (prompt.prompt_description ? escapeHtml(prompt.prompt_description) : '<em style="color: #999;">-</em>') + '</td>';
-        html += '<td>' + prompt.created_at + '</td>';
-        html += '<td>' + (prompt.is_default ? '⭐ Ja' : '-') + '</td>';
-        html += '<td>' + prompt.usage_count + 'x</td>';
-        html += '<td>';
-        html += '<button class="btn btn-sm btn-info" onclick="loadPromptToForm(' + prompt.prompt_id + ', \'' + promptType + '\')">📋 Laden</button> ';
-        html += '<button class="btn btn-sm btn-primary" onclick="editPrompt(' + prompt.prompt_id + ')">✏️</button> ';
-        html += '<button class="btn btn-sm btn-danger" onclick="deletePromptAndReload(' + prompt.prompt_id + ', \'' + promptType + '\', \'' + targetElementId + '\')">🗑️</button>';
-        html += '</td>';
-        html += '</tr>';
-    });
-
-    html += '</tbody></table>';
-    listEl.innerHTML = html;
-}
-
-function loadPromptToForm(promptId, promptType) {
-    fetch('admin.php?do=AIProductOptimizerModuleCenterModule/GetPrompts&active_only=0')
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            var prompt = data.prompts.find(p => p.prompt_id == promptId);
-            if (prompt) {
-                if (promptType === 'vision') {
-                    document.querySelector('textarea[name="vision_system_prompt"]').value = prompt.system_prompt;
-                    document.querySelector('textarea[name="vision_user_prompt"]').value = prompt.user_prompt;
-                    hideVisionLibrary();
-                    alert('✓ Vision-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
-                } else {
-                    document.querySelector('textarea[name="system_prompt"]').value = prompt.system_prompt;
-                    document.querySelector('textarea[name="user_prompt"]').value = prompt.user_prompt;
-                    hideProductLibrary();
-                    alert('✓ Produkttext-Prompts in Formular geladen.\n\nVergessen Sie nicht auf "Speichern" zu klicken!');
-                }
-            }
-        }
-    })
-    .catch(error => {
-        alert('❌ Fehler beim Laden: ' + error.message);
     });
 }
 
@@ -835,7 +935,6 @@ function deletePromptAndReload(promptId, promptType, targetElementId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload the specific library
             loadPromptLibraryInto(promptType, targetElementId);
         } else {
             alert('❌ Fehler: ' + data.error);
@@ -844,6 +943,12 @@ function deletePromptAndReload(promptId, promptType, targetElementId) {
     .catch(error => {
         alert('❌ Fehler: ' + error.message);
     });
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 </script>
 </body>
