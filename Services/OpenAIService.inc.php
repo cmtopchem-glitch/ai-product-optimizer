@@ -166,11 +166,11 @@ private function getDefaultUserPrompt()
            "WICHTIG - QUALITÄTSKRITERIEN:\n" .
            "✓ product_name MUSS VOLLSTÄNDIG in {LANGUAGE} übersetzt sein (nur Marken/Nummern behalten!)\n" .
            "✓ product_description MUSS valides HTML mit <p>, <h2>, <ul>, <li>, <strong>, <em> enthalten\n" .
-           "✓ Mindestens 2-3 <h2> Zwischenüberschriften in der Beschreibung\n" .
+           "✓ PFLICHT: Mindestens 2-3 <h2> Zwischenüberschriften in JEDER Beschreibung\n" .
            "✓ Mindestens 5-7 <strong> Hervorhebungen für Keywords\n" .
            "✓ Platzhalter [[MEDIA_TAG_X]] EXAKT übernehmen\n" .
            "✓ meta_keywords und search_keywords mit mindestens 8 Begriffen gefüllt\n" .
-           "✓ ALLE Texte MÜSSEN komplett in {LANGUAGE} sein - keine Mischung mit anderen Sprachen!\n\n" .
+           "✓ Alle Texte vollständig in Zielsprache {LANGUAGE}\n\n" .
            "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
            '  "product_name": "VOLLSTÄNDIG ÜBERSETZTER Produktname in {LANGUAGE} (NUR Marken/Nummern beibehalten)",'."\n" .
@@ -209,57 +209,10 @@ private function getDefaultUserPrompt()
     }
 
     /**
-     * Holt Sprachname aus Datenbank und mappt ihn auf standardisierte Namen
-     * Die OpenAI versteht (englische/native Namen)
+     * Holt Sprachname aus Datenbank
      */
     private function getLanguageName($languageCode)
     {
-        // Standardisierte Sprachnamen-Mapping für OpenAI
-        // Verwende englische oder native Namen für beste Ergebnisse
-        $standardLanguageNames = [
-            'de' => 'German',
-            'en' => 'English',
-            'fr' => 'French',
-            'es' => 'Spanish',
-            'it' => 'Italian',
-            'nl' => 'Dutch',
-            'pl' => 'Polish',
-            'pt' => 'Portuguese',
-            'ru' => 'Russian',
-            'tr' => 'Turkish',
-            'cs' => 'Czech',
-            'da' => 'Danish',
-            'sv' => 'Swedish',
-            'no' => 'Norwegian',
-            'fi' => 'Finnish',
-            'hu' => 'Hungarian',
-            'ro' => 'Romanian',
-            'sk' => 'Slovak',
-            'bg' => 'Bulgarian',
-            'hr' => 'Croatian',
-            'sl' => 'Slovenian',
-            'el' => 'Greek',
-            'ja' => 'Japanese',
-            'zh' => 'Chinese',
-            'ko' => 'Korean',
-            'ar' => 'Arabic',
-            'he' => 'Hebrew',
-            'th' => 'Thai',
-            'vi' => 'Vietnamese',
-            'id' => 'Indonesian',
-            'ms' => 'Malay',
-            'hi' => 'Hindi',
-            'uk' => 'Ukrainian'
-        ];
-
-        $code = strtolower($languageCode);
-
-        // Wenn wir ein Mapping haben, verwende es
-        if (isset($standardLanguageNames[$code])) {
-            return $standardLanguageNames[$code];
-        }
-
-        // Fallback: Versuche aus DB zu laden
         $query = "SELECT name FROM languages WHERE code = '" . xtc_db_input($languageCode) . "' LIMIT 1";
         $result = xtc_db_query($query);
 
@@ -267,8 +220,7 @@ private function getDefaultUserPrompt()
             return $row['name'];
         }
 
-        // Letzter Fallback
-        return ucfirst($languageCode);
+        return ucfirst($languageCode); // Fallback
     }
     
     /**
