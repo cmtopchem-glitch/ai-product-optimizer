@@ -70,7 +70,32 @@ class OpenAIService
 
         // Fallback wenn nicht konfiguriert
         if (empty($this->systemPrompt)) {
-            $this->systemPrompt = 'Du bist ein professioneller E-Commerce SEO-Texter. Du antwortest immer im angeforderten JSON-Format.';
+            $this->systemPrompt = "Du bist ein professioneller E-Commerce SEO-Texter mit strengen Qualitätsrichtlinien:\n\n" .
+                "GRUNDREGELN:\n" .
+                "1. Antworte IMMER im angeforderten JSON-Format (ohne Markdown-Blöcke)\n" .
+                "2. Verwende sauberes, semantisches HTML im product_description Feld\n" .
+                "3. Verwende NIEMALS <h1> Tags (nur <h2>, <h3> für Struktur)\n" .
+                "4. Erhalte alle vorhandenen <img> und <iframe> Tags aus dem Original-Text\n\n" .
+                "INHALTLICHE REGELN:\n" .
+                "5. Erfinde KEINE Eigenschaften, Funktionen oder technische Daten\n" .
+                "6. Verwende NUR Informationen aus dem bereitgestellten Original-Text\n" .
+                "7. Wenn Informationen fehlen, lasse sie weg (keine Spekulationen)\n" .
+                "8. Keine Call-to-Action am Textanfang (z.B. \"Entdecken Sie...\", \"Jetzt kaufen...\")\n" .
+                "9. Beginne direkt mit informativen, sachlichen Produktinformationen\n\n" .
+                "STRUKTURIERUNG:\n" .
+                "10. Gliedere längere Texte mit aussagekräftigen <h2> Überschriften\n" .
+                "11. Verwende beschreibende Überschriften (nicht \"Einleitung\", \"Fazit\", \"Zusammenfassung\")\n" .
+                "12. Gute Beispiele: \"Technische Eigenschaften\", \"Anwendungsbereiche\", \"Lieferumfang\", \"Funktionsweise\"\n" .
+                "13. Schlechte Beispiele: \"Übersicht\", \"Details\", \"Mehr Informationen\", \"Produktbeschreibung\"\n\n" .
+                "PFLICHTFELDER:\n" .
+                "14. Fülle ALLE JSON-Felder vollständig aus\n" .
+                "15. meta_keywords MUSS 10-15 relevante Begriffe enthalten\n" .
+                "16. search_keywords MUSS 8-12 Suchbegriffe enthalten\n" .
+                "17. Beide Keyword-Felder dürfen NIEMALS leer sein\n\n" .
+                "QUALITÄT:\n" .
+                "18. Schreibe verkaufsstarke, aber sachliche Texte\n" .
+                "19. Hebe echte Vorteile und Nutzen hervor (nur wenn im Original belegt)\n" .
+                "20. Verwende natürliche, nicht übertriebene Sprache";
         }
 
         // Lade User-Prompt Template
@@ -101,86 +126,74 @@ class OpenAIService
  */
 private function getDefaultUserPrompt()
 {
-    return "Du bist ein E-Commerce SEO-Experte.\n\n" .
-           "PRODUKT: {PRODUCT_NAME}\n" .
-           "{BRAND_LINE}" .
-           "{CATEGORY_LINE}" .
-           "\nORIGINAL-TEXT:\n{ORIGINAL_TEXT}\n\n" .
+    return "Du bist ein Experte für E-Commerce SEO und Produkttexte.\n\n" .
+           "Produkt: {PRODUCT_NAME}\n" .
+           "{BRAND_LINE}{CATEGORY_LINE}" .
+           "Original-Produkttext:\n{ORIGINAL_TEXT}\n\n" .
            "AUFGABE:\n" .
-           "Erstelle SEO-optimierten Content in {LANGUAGE} mit folgenden Elementen:\n\n" .
+           "Erstelle einen SEO-optimierten Produkttext in {LANGUAGE}. Beachte folgende Anforderungen:\n\n" .
            "1. PRODUKTNAME (ZWINGEND in Zielsprache übersetzen!)\n" .
            "   - Der Produktname MUSS IMMER in die Zielsprache {LANGUAGE} übersetzt werden!\n" .
            "   - Behalte nur Markennamen (z.B. 'Bosch', 'Tornador') und Artikelnummern bei\n" .
            "   - Übersetze beschreibende Teile des Produktnamens vollständig\n" .
            "   - Beispiele:\n" .
-           "     * 'Foam Gun Tornador' → 'Schaumkanone Tornador' (Deutsch)\n" .
-           "     * 'High Pressure Cleaner PRO-2000' → 'Hochdruckreiniger PRO-2000' (Deutsch)\n" .
-           "     * 'Car Wash Kit' → 'Autowasch-Set' (Deutsch)\n\n" .
+           "     * 'Foam Gun Tornador' → 'Schaumkanone Tornador' (auf Deutsch)\n" .
+           "     * 'Foam Gun Tornador' → 'Pistolet à mousse Tornador' (auf Französisch)\n" .
+           "     * 'High Pressure Cleaner PRO-2000' → 'Hochdruckreiniger PRO-2000' (auf Deutsch)\n\n" .
            "2. PRODUKTBESCHREIBUNG (300-500 Wörter) - MIT HTML-FORMATIERUNG\n" .
-           "   STRUKTUR (PFLICHT):\n" .
-           "   - Einleitungsabsatz mit Produktvorstellung (<p>)\n" .
-           "   - Zwischenüberschrift 1: z.B. 'Eigenschaften und Vorteile' (<h2>)\n" .
-           "   - Aufzählungsliste mit Produktmerkmalen (<ul><li>)\n" .
-           "   - Zwischenüberschrift 2: z.B. 'Anwendungsbereiche' oder 'Lieferumfang' (<h2>)\n" .
-           "   - Weitere Details in Absätzen (<p>)\n" .
-           "   - Abschließender Call-to-Action Absatz (<p>)\n\n" .
-           "   FORMATIERUNG (PFLICHT):\n" .
-           "   - ALLE Absätze MÜSSEN in <p>-Tags stehen\n" .
-           "   - Verwende <h2> für Zwischenüberschriften (2-3 pro Beschreibung)\n" .
-           "   - Nutze <ul> und <li> für Listen\n" .
-           "   - Hebe wichtige Keywords und Produktmerkmale mit <strong> hervor\n" .
-           "   - Verwende <em> für sekundäre Betonungen\n" .
-           "   - NIEMALS Überschriften in <p>-Tags!\n\n" .
-           "   KEYWORD-HERVORHEBUNG (PFLICHT):\n" .
-           "   - Produktname beim ersten Vorkommen: <strong>\n" .
-           "   - Wichtigste 5-7 Keywords: <strong>\n" .
-           "   - Technische Spezifikationen: <strong>\n" .
-           "   - USPs und Alleinstellungsmerkmale: <strong>\n\n" .
-           "   MEDIA-TAGS:\n" .
-           "   - WICHTIG: Platzhalter [[MEDIA_TAG_X]] MÜSSEN EXAKT so übernommen werden!\n" .
-           "   - Setze diese Platzhalter an passende Stellen (nach Absätzen oder Listen)\n" .
-           "   - Integriere sie sinnvoll in den Textfluss\n\n" .
+           "   PFLICHT-STRUKTUR für ALLE Sprachen:\n" .
+           "   - Beginne NICHT mit Call-to-Action (\"Entdecken Sie...\", \"Jetzt kaufen...\")\n" .
+           "   - Beginne direkt mit informativen, sachlichen Produktinformationen\n" .
+           "   - Verwende mindestens 2-3 aussagekräftige <h2> Zwischenüberschriften\n" .
+           "   - Gute Überschriften: \"Technische Eigenschaften\", \"Anwendungsbereiche\", \"Lieferumfang\"\n" .
+           "   - Schlechte Überschriften: \"Einleitung\", \"Fazit\", \"Übersicht\", \"Details\"\n" .
+           "   - NIEMALS <h1> Tags verwenden!\n" .
+           "   - Alle Absätze in <p> Tags\n" .
+           "   - Aufzählungen mit <ul> und <li>\n" .
+           "   - Wichtige Begriffe mit <strong> hervorheben\n" .
+           "   - Erfinde KEINE Eigenschaften - nur Infos aus Original-Text verwenden\n\n" .
+           "   WICHTIG - MEDIA-TAGS:\n" .
+           "   - Platzhalter [[MEDIA_TAG_X]] MÜSSEN EXAKT übernommen werden!\n" .
+           "   - Setze diese an passende Stellen im Text\n\n" .
            "3. META TITLE (max. 60 Zeichen)\n" .
            "   - Prägnant und klickstark\n" .
            "   - Hauptkeyword am Anfang\n" .
            "   - In Zielsprache {LANGUAGE}\n\n" .
            "4. META DESCRIPTION (max. 160 Zeichen)\n" .
-           "   - Call-to-Action enthalten\n" .
+           "   - Überzeugende Beschreibung\n" .
            "   - Wichtigste USPs nennen\n" .
            "   - In Zielsprache {LANGUAGE}\n\n" .
-           "5. META KEYWORDS (10-15 Begriffe, Komma-separiert)\n" .
+           "5. META KEYWORDS (10-15 Begriffe, Komma-separiert, PFLICHTFELD!)\n" .
            "   - Hauptkeyword: Produktname bzw. Produkttyp\n" .
            "   - Verwandte Begriffe: Synonyme, Kategorien\n" .
            "   - Long-Tail Keywords: 2-3 Wort-Kombinationen\n" .
-           "   - Marken-Keywords falls relevant\n" .
-           "   - Technische Begriffe aus der Beschreibung\n" .
            "   - In Zielsprache {LANGUAGE}\n" .
-           "   Beispiel: \"Schaumkanone, Foam Gun, Tornador, Autoreinigung, Hochdruckreiniger, Druckluft Schaumpistole, Fahrzeugpflege, Schaumreiniger, Auto Waschen, Detailing Equipment\"\n\n" .
-           "6. SHOP SUCHWORTE (8-12 Begriffe, Komma-separiert)\n" .
+           "   - DARF NICHT leer sein!\n\n" .
+           "6. SHOP SUCHWORTE (8-12 Begriffe, Komma-separiert, PFLICHTFELD!)\n" .
            "   - Suchbegriffe die Kunden tatsächlich eingeben würden\n" .
            "   - Umgangssprache und Synonyme\n" .
-           "   - Häufige Tippfehler und Varianten\n" .
-           "   - Kombinationen mit 'kaufen', 'günstig', etc.\n" .
            "   - In Zielsprache {LANGUAGE}\n" .
-           "   Beispiel: \"schaum pistole, foam lance auto, druckluft schaum, reinigungsschaum auto, schaum gerät waschen, tornador alternative, auto schäumer, fahrzeug schaum reiniger\"\n\n" .
-           "WICHTIG - QUALITÄTSKRITERIEN:\n" .
-           "✓ product_name MUSS VOLLSTÄNDIG in {LANGUAGE} übersetzt sein (nur Marken/Nummern behalten!)\n" .
-           "✓ product_description MUSS valides HTML mit <p>, <h2>, <ul>, <li>, <strong>, <em> enthalten\n" .
-           "✓ PFLICHT: Mindestens 2-3 <h2> Zwischenüberschriften in JEDER Beschreibung\n" .
-           "✓ Mindestens 5-7 <strong> Hervorhebungen für Keywords\n" .
-           "✓ Platzhalter [[MEDIA_TAG_X]] EXAKT übernehmen\n" .
-           "✓ meta_keywords und search_keywords mit mindestens 8 Begriffen gefüllt\n" .
-           "✓ Alle Texte vollständig in Zielsprache {LANGUAGE}\n\n" .
-           "ANTWORT-FORMAT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
+           "   - DARF NICHT leer sein!\n\n" .
+           "QUALITÄTSKRITERIEN:\n" .
+           "✓ product_name VOLLSTÄNDIG in {LANGUAGE} übersetzt (nur Marken/Nummern behalten!)\n" .
+           "✓ product_description mit validem HTML: <p>, <h2>, <ul>, <li>, <strong>\n" .
+           "✓ PFLICHT: Mindestens 2-3 <h2> Überschriften in JEDER Beschreibung - auch in Französisch, Spanisch, etc.!\n" .
+           "✓ NIEMALS <h1> verwenden!\n" .
+           "✓ Keine Call-to-Action am Textanfang\n" .
+           "✓ Platzhalter [[MEDIA_TAG_X]] exakt übernehmen\n" .
+           "✓ meta_keywords mit 10-15 Begriffen gefüllt (niemals leer!)\n" .
+           "✓ search_keywords mit 8-12 Begriffen gefüllt (niemals leer!)\n" .
+           "✓ Alle Texte vollständig in {LANGUAGE}\n\n" .
+           "FORMAT DER ANTWORT (NUR JSON, KEINE MARKDOWN-BLÖCKE):\n" .
            "{\n" .
-           '  "product_name": "VOLLSTÄNDIG ÜBERSETZTER Produktname in {LANGUAGE} (NUR Marken/Nummern beibehalten)",'."\n" .
-           '  "product_description": "<p>Einleitung mit <strong>Keywords</strong>...</p><h2>Zwischenüberschrift</h2><ul><li>Merkmal 1</li><li>Merkmal 2</li></ul>[[MEDIA_TAG_0]]<h2>Weitere Überschrift</h2><p>Text mit <strong>Hervorhebungen</strong>...</p>",'."\n" .
+           '  "product_name": "VOLLSTÄNDIG ÜBERSETZTER Produktname in {LANGUAGE}",'."\n" .
+           '  "product_description": "<p>Einleitung...</p><h2>Technische Eigenschaften</h2><ul><li>Merkmal 1</li></ul>[[MEDIA_TAG_0]]<h2>Anwendungsbereiche</h2><p>Text...</p>",'."\n" .
            '  "meta_title": "SEO Meta-Titel in {LANGUAGE} (max 60 Zeichen)",'."\n" .
            '  "meta_description": "Meta-Description in {LANGUAGE} (max 160 Zeichen)",'."\n" .
            '  "meta_keywords": "keyword1, keyword2, keyword3, keyword4, keyword5, keyword6, keyword7, keyword8, keyword9, keyword10",'."\n" .
-           '  "search_keywords": "suchwort1, synonym1, suchwort2, variante1, suchwort3, kombination1, suchwort4, suchwort5"'."\n" .
+           '  "search_keywords": "suchwort1, suchwort2, suchwort3, suchwort4, suchwort5, suchwort6, suchwort7, suchwort8"'."\n" .
            "}\n\n" .
-           "Antworte NUR mit dem JSON-Objekt (keine ```json Blöcke)!";
+           "Antworte NUR mit dem JSON-Objekt, ohne zusätzlichen Text oder Markdown-Blöcke!";
 }
     
     /**
